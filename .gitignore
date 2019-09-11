@@ -1,0 +1,10 @@
+.*
+lux-demo
+*.o
+Makefile
+a.out
+*.old
+*.bak
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
