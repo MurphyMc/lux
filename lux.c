@@ -1358,15 +1358,15 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
     // Currently, the windows are always double buffered, so it doesn't
     // show, but it still makes me sad.
     const int ndist = TITLEBAR_H+EDGE_SIZE+EMBOSS_SIZE+OUTLINE;
-    draw_h_notch(surf, OUTLINE, ndist, wc->edge_tl, wc->edge_br);
-    draw_h_notch(surf, base_rect.w-OUTLINE-EDGE_SIZE, ndist, wc->edge_tl, wc->edge_br);
-    draw_h_notch(surf, OUTLINE, base_rect.h-ndist-2*EMBOSS_SIZE, wc->edge_tl, wc->edge_br);
-    draw_h_notch(surf, base_rect.w-OUTLINE-EDGE_SIZE, base_rect.h-ndist-2*EMBOSS_SIZE, wc->edge_tl, wc->edge_br);
+    draw_h_notch(surf, base_rect.x + OUTLINE,                         base_rect.y + ndist, wc->edge_tl, wc->edge_br);
+    draw_h_notch(surf, base_rect.x + base_rect.w-OUTLINE-EDGE_SIZE,   base_rect.y + ndist, wc->edge_tl, wc->edge_br);
+    draw_h_notch(surf, base_rect.x + OUTLINE,                         base_rect.y + base_rect.h-ndist-2*EMBOSS_SIZE, wc->edge_tl, wc->edge_br);
+    draw_h_notch(surf, base_rect.x + base_rect.w-OUTLINE-EDGE_SIZE,   base_rect.y + base_rect.h-ndist-2*EMBOSS_SIZE, wc->edge_tl, wc->edge_br);
 
-    draw_v_notch(surf, ndist, OUTLINE, wc->edge_tl, wc->edge_br);
-    draw_v_notch(surf, ndist, base_rect.h-OUTLINE-EDGE_SIZE, wc->edge_tl, wc->edge_br);
-    draw_v_notch(surf, base_rect.w-ndist-2*EMBOSS_SIZE, OUTLINE, wc->edge_tl, wc->edge_br);
-    draw_v_notch(surf, base_rect.w-ndist-2*EMBOSS_SIZE, base_rect.h-OUTLINE-EDGE_SIZE, wc->edge_tl, wc->edge_br);
+    draw_v_notch(surf, base_rect.x + ndist,                           base_rect.y + OUTLINE, wc->edge_tl, wc->edge_br);
+    draw_v_notch(surf, base_rect.x + ndist,                           base_rect.y + base_rect.h-OUTLINE-EDGE_SIZE, wc->edge_tl, wc->edge_br);
+    draw_v_notch(surf, base_rect.x + base_rect.w-ndist-2*EMBOSS_SIZE, base_rect.y + OUTLINE, wc->edge_tl, wc->edge_br);
+    draw_v_notch(surf, base_rect.x + base_rect.w-ndist-2*EMBOSS_SIZE, base_rect.y + base_rect.h-OUTLINE-EDGE_SIZE, wc->edge_tl, wc->edge_br);
   }
 
   SDL_Rect titler = *rr;
