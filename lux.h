@@ -129,6 +129,20 @@ bool rect_covered_by (SDL_Rect * r1, SDL_Rect * r2);
 #define WIN_MAX_W 4096
 #define WIN_MAX_H 4096
 
+struct Window;
+
+typedef struct WindowProp
+{
+  int id;
+  void (*free)(struct Window * w, struct WindowProp * p);
+  union
+  {
+    void * ptr;
+    intptr_t value;
+    uintptr_t uvalue;
+  };
+} WindowProp;
+
 typedef struct Window
 {
   int x, y;
@@ -160,6 +174,8 @@ typedef struct Window
   void (*on_keyup)(struct Window *, SDL_keysym *, bool down);
   void * opaque_ptr;
   int opaque_int;
+  WindowProp * props;
+  int props_count;
   uint8_t button_state; // Bits for titlebar buttons pressed
 } Window;
 
@@ -191,6 +207,26 @@ void window_rect_screen_to_client (Window * w, SDL_Rect * r);
 
 bool window_contains_pt (Window * w, Point * pt); // pt in screen coords
 
+// Windows can have properties.  These are a place to stash your own data
+// inside a window so that you don't need to keep an external data structure
+// which maps between a Window and your own data.
+// Each property has an id, which is a non-negative interger.  You can use
+// window_prop_id() to map a string to a numeric id.  You can call this
+// again and again (which will cost you), or just do it once and save the
+// return value to access the property in the future.
+// You can access the same backing data with either a "prop" or a "ptr"
+// function, so don't mix and match for the same id.  If a property
+// has a free function, it's called on the property when the window closes.
+// The idea is that the window "owns" the data, and you don't need to
+// clean it up yourself in an on_close().  You can manually set a free
+// function, but if you call window_ptr_set() and there isn't a free
+// function already, it'll set the id up to just call free() on the data.
+bool window_prop_set (Window * w, int id, intptr_t value);
+intptr_t window_prop_get (Window * w, int id);
+bool window_ptr_free_set (Window * w, int id, void (*freefunc)(Window *, WindowProp *));
+bool window_ptr_set (Window * w, int id, void * value);
+void * window_ptr_get (Window * w, int id);
+int window_prop_id (const char * propname); // -1 on error
 
 // -- SDLuxer ----------------------------------------------------------------
 

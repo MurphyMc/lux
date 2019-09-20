@@ -368,8 +368,108 @@ void window_close (Window * w)
     if (w->pix_free) w->pix_free(w, pix);
     else free(pix);
   }
-  free(w);
 
+  for (int i = 0; i < w->props_count; i++)
+  {
+    WindowProp * p = w->props+i;
+    if (p->free) p->free(w, p);
+  }
+  free(w->props);
+  free(w);
+}
+
+static WindowProp * _window_find_create_prop (Window * w, int id, bool create)
+{
+  for (int i = 0; i < w->props_count; i++)
+  {
+    WindowProp * p = w->props+i;
+    if (p->id == id)
+    {
+      return p;
+    }
+  }
+  if (!create) return NULL;
+  WindowProp * newprops = malloc(sizeof(WindowProp)*(w->props_count+1));
+  if (!newprops) return NULL;
+  memcpy(newprops, w->props, sizeof(WindowProp)*w->props_count);
+  free(w->props);
+  w->props = newprops;
+
+  WindowProp wp = {};
+  newprops[w->props_count] = wp;
+  newprops[w->props_count].id = id;
+  return &newprops[w->props_count++];
+}
+
+bool window_prop_set (Window * w, int id, intptr_t value)
+{
+  if (id == -1) return false;
+  WindowProp * p = _window_find_create_prop(w, id, true);
+  if (!p) return false;
+  p->value = value;
+  if (p->free) fprintf(stderr, "Setting non-pointer for pointer property\n");
+}
+
+intptr_t window_prop_get (Window * w, int id)
+{
+  if (id == -1) return 0;
+  WindowProp * p = _window_find_create_prop(w, id, false);
+  if (!p) return 0;
+  return p->value;
+}
+
+void _default_prop_free (Window * w, WindowProp * p)
+{
+  free(p->ptr);
+  p->ptr = NULL;
+}
+
+bool window_ptr_free_set (Window * w, int id, void (*freefunc)(Window *, WindowProp *))
+{
+  if (id == -1) return false;
+  WindowProp * p = _window_find_create_prop(w, id, true);
+  if (!p) return false;
+  p->free = freefunc;
+  return true;
+}
+
+bool window_ptr_set (Window * w, int id, void * ptr)
+{
+  if (id == -1) return false;
+  WindowProp * p = _window_find_create_prop(w, id, true);
+  if (!p) return false;
+  if (p->free) p->free(w, p->ptr);
+  p->ptr = ptr;
+  if (!p->free)
+  {
+    p->free = _default_prop_free;
+  }
+}
+
+void * window_ptr_get (Window * w, int id)
+{
+  if (id == -1) return NULL;
+  WindowProp * p = _window_find_create_prop(w, id, false);
+  if (!p) return NULL;
+  return p->ptr;
+}
+
+static const char ** _propnames = NULL;
+static int _propnames_count = 0;
+
+int window_prop_id (const char * propname)
+{
+  for (int i = 0; i < _propnames_count; i++)
+  {
+    if (!strcmp(propname, _propnames[i])) return i;
+  }
+  const char ** newnames = malloc(sizeof(char*)*(_propnames_count+1));
+  if (!newnames) return -1;
+  memcpy(newnames, _propnames, sizeof(char*)*_propnames_count);
+  free(_propnames);
+  _propnames = newnames;
+  newnames[_propnames_count] = strdup(propname);
+  return _propnames_count++;
 }
 
 static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char * caption, bool active, int button_state, int flags);
@@ -1492,6 +1592,12 @@ static void _lux_terminate ()
     window_close(w);
     w = window_below(w);
   }
+
+  for (int i = 0; i < _propnames_count; i++)
+  {
+    free((void*)_propnames[i]);
+  }
+  free(_propnames);
 
   SDL_FreeSurface(font);
   SDL_Quit();
