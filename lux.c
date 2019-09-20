@@ -1268,7 +1268,25 @@ static void draw_corner_up (SDL_Surface * surf, int x, int y, int size, Uint32 c
   SDL_BlitSurface(scratch, &rs, surf, &rd);
 }
 
-static void draw_rect (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 color)
+// Unlike SDL_FillRect, this never messes with the value in r.
+static void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color)
+{
+  SDL_Rect rr;
+  if (r)
+  {
+    rr = *r;
+  }
+  else
+  {
+    rr.x = 0;
+    rr.y = 0;
+    rr.w = surf->w;
+    rr.h = surf->h;
+  }
+  SDL_FillRect(surf, &rr, color);
+}
+
+static void rect_outline (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 color)
 {
   SDL_Rect * rr;
   SDL_Rect rrrr;
@@ -1290,15 +1308,19 @@ static void draw_rect (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 colo
   r.y = rr->y;
   r.w = rr->w;
   r.h = size;
-  SDL_FillRect(surf, &r, color);
+  //SDL_FillRect(surf, &r, color);
+  rect_fill(surf, &r, color);
   r.y = rr->y + rr->h - size;
-  SDL_FillRect(surf, &r, color);
+  //SDL_FillRect(surf, &r, color);
+  rect_fill(surf, &r, color);
   r.y = rr->y + size;
   r.w = size;
   r.h = rr->h - 2*size;
-  SDL_FillRect(surf, &r, color);
+  //SDL_FillRect(surf, &r, color);
+  rect_fill(surf, &r, color);
   r.x = rr->x + rr->w - size;
-  SDL_FillRect(surf, &r, color);
+  //SDL_FillRect(surf, &r, color);
+  rect_fill(surf, &r, color);
 }
 
 static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColors * wc)
@@ -1332,17 +1354,17 @@ static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColo
   r.y = rr->y;
   r.w = rr->w - EMBOSS_SIZE;
   r.h = EMBOSS_SIZE;
-  SDL_FillRect(surf, &r, tl);
+  rect_fill(surf, &r, tl);
   r.x += EMBOSS_SIZE;
   r.y = rr->y + rr->h - EMBOSS_SIZE;
-  SDL_FillRect(surf, &r, br);
+  rect_fill(surf, &r, br);
   r.x = rr->x;
   r.y = rr->y + EMBOSS_SIZE;
   r.w = EMBOSS_SIZE;
   r.h = rr->h - 2*EMBOSS_SIZE;
-  SDL_FillRect(surf, &r, tl);
+  rect_fill(surf, &r, tl);
   r.x = rr->x + rr->w - EMBOSS_SIZE;
-  SDL_FillRect(surf, &r, br);
+  rect_fill(surf, &r, br);
 
   SDL_UnlockSurface(surf);
 }
@@ -1477,14 +1499,14 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
 
   if (OUTLINE)
   {
-    draw_rect(surf, rr, OUTLINE, wc->outline);
+    rect_outline(surf, rr, OUTLINE, wc->outline);
   }
 
   rect_shrink(rr, OUTLINE);
 
   draw_frame(surf, rr, false, wc);
   rect_shrink(rr, EMBOSS_SIZE);
-  draw_rect(surf, rr, EDGE_SIZE - 2*EMBOSS_SIZE, wc->face);
+  rect_outline(surf, rr, EDGE_SIZE - 2*EMBOSS_SIZE, wc->face);
   //SDL_Rect titler = *rr;
   rect_shrink(rr, EDGE_SIZE - 2*EMBOSS_SIZE);
   //rr->y += (TITLEBAR_H + 2*EMBOSS_SIZE) - (EDGE_SIZE-2*EMBOSS_SIZE);
@@ -1523,7 +1545,7 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
   rr->w = rr->h;
   draw_frame(surf, rr, pressed, wc);
   rect_shrink(rr, EMBOSS_SIZE);
-  SDL_FillRect(surf, rr, wc->face);
+  rect_fill(surf, rr, wc->face);
   draw_x(surf, rr->x+rr->w/2+(pressed?1:0), rr->y+rr->h/2+(pressed?1:0), -1, rr->w-2,
          wc->edge_tl, wc->edge_br);
 
