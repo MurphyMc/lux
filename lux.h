@@ -146,6 +146,7 @@ typedef struct WindowProp
 typedef struct Window
 {
   int x, y;
+  int w, h;
   int flags;
   uint32_t bg_color;
   void* (*pix_alloc)(size_t);

@@ -495,6 +495,8 @@ Window * window_create (int w, int h, const char * caption, int flags, void* (*p
   if (_next_w_x == -1) _next_w_x = _window_top_x;
   wnd->x = _next_w_x;
   wnd->y = _next_w_y;
+  wnd->w = w;
+  wnd->h = h;
   if (h + _next_w_y + 20 > screen->h && h + _window_default_top < screen->h)
   {
     _window_top_x += 50;
@@ -625,8 +627,8 @@ void window_get_rect (Window * w, SDL_Rect * r)
 {
   r->x = w->x;
   r->y = w->y;
-  r->w = w->surf->w;
-  r->h = w->surf->h;
+  r->w = w->w;
+  r->h = w->h;
 }
 
 
@@ -700,8 +702,8 @@ void window_get_client_rect (Window * w, SDL_Rect * r)
 {
   r->x = EDGE_SIZE+OUTLINE;
   r->y = EDGE_SIZE+OUTLINE + 2*EMBOSS_SIZE + TITLEBAR_H;
-  r->w = w->surf->w - 2*r->x;
-  r->h = w->surf->h - r->y - EDGE_SIZE - OUTLINE;
+  r->w = w->w - 2*r->x;
+  r->h = w->h - r->y - EDGE_SIZE - OUTLINE;
 }
 
 // In window coords
@@ -715,7 +717,7 @@ void _window_get_button_rect (Window * w, SDL_Rect * r, int button)
   if (button >= 0)
     r->x = button * r->w + OUTLINE+EDGE_SIZE;
   else
-    r->x = w->surf->w + button * r->w - OUTLINE-EDGE_SIZE;
+    r->x = w->w + button * r->w - OUTLINE-EDGE_SIZE;
 }
 
 Window * window_clear_client (Window * w, uint32_t color)
@@ -740,29 +742,29 @@ bool _window_resize (Window * w, int resize, int x, int y)
   window_get_rect(w, &old_rect);
   SDL_Rect old_crect;
   window_get_client_rect(w, &old_crect);
-  int ww = w->surf->w;
+  int ww = w->w;
   int xx = w->x;
-  int hh = w->surf->h;
+  int hh = w->h;
   int yy = w->y;
   if (resize & (RESIZE_L|RESIZE_R))
   {
-    ww = w->surf->w + x * ((resize & RESIZE_L) ? -1 : 1);
+    ww = w->w + x * ((resize & RESIZE_L) ? -1 : 1);
     if (ww > WIN_MAX_W) ww = WIN_MAX_W;
     else if (ww < WIN_MIN_W) ww = WIN_MIN_W;
-    if (resize & RESIZE_L) xx += (w->surf->w - ww);
+    if (resize & RESIZE_L) xx += (w->w - ww);
 
-    if (ww > w->surf->w) growx = true;
-    else if (ww < w->surf->w) shrinkx = true;
+    if (ww > w->w) growx = true;
+    else if (ww < w->w) shrinkx = true;
   }
   if (resize & (RESIZE_T|RESIZE_B))
   {
-    hh = w->surf->h + y * ((resize & RESIZE_T) ? -1 : 1);
+    hh = w->h + y * ((resize & RESIZE_T) ? -1 : 1);
     if (hh > WIN_MAX_H) hh = WIN_MAX_H;
     else if (hh < WIN_MIN_H) hh = WIN_MIN_H;
-    if (resize & RESIZE_T) yy += (w->surf->h - hh);
+    if (resize & RESIZE_T) yy += (w->h - hh);
 
-    if (hh > w->surf->h) growy = true;
-    else if (hh < w->surf->h) shrinky = true;
+    if (hh > w->h) growy = true;
+    else if (hh < w->h) shrinky = true;
   }
 
   if (!growx && !growy && !shrinkx && !shrinky) return true; // or false?
@@ -777,6 +779,9 @@ bool _window_resize (Window * w, int resize, int x, int y)
     else free(new_pixels);
     return false;
   }
+
+  w->w = ww;
+  w->h = hh;
 
   SDL_Surface * old_surf = w->surf;
 
@@ -797,8 +802,8 @@ bool _window_resize (Window * w, int resize, int x, int y)
       SDL_Rect r;
       r.x = old_crect.w + old_crect.x;
       r.y = 0;
-      r.w = w->surf->w - r.x;
-      r.h = w->surf->h;
+      r.w = w->w - r.x;
+      r.h = w->h;
       SDL_FillRect(w->surf, &r, bgcolor);
     }
     if (growy)
@@ -806,8 +811,8 @@ bool _window_resize (Window * w, int resize, int x, int y)
       SDL_Rect r;
       r.x = 0;
       r.y = old_crect.h + old_crect.y;
-      r.w = w->surf->w;
-      r.h = w->surf->h - old_crect.h;
+      r.w = w->w;
+      r.h = w->h - old_crect.h;
       SDL_FillRect(w->surf, &r, bgcolor);
     }
   }
@@ -845,7 +850,7 @@ bool _window_resize (Window * w, int resize, int x, int y)
       // Window moved to left, there's a blank to its right
       do_x = true;
       xslice = old_rect;
-      xslice.x = MAX(w->x + w->surf->w, xslice.x);
+      xslice.x = MAX(w->x + w->w, xslice.x);
       xslice.w = xslice.w - (xslice.x - old_rect.x);
       _window_add_uncover_rect(&xslice);
     }
@@ -860,7 +865,7 @@ bool _window_resize (Window * w, int resize, int x, int y)
     {
       do_y = true;
       yslice = old_rect;
-      yslice.y = MAX(w->y + w->surf->h, yslice.y);
+      yslice.y = MAX(w->y + w->h, yslice.y);
       yslice.h = yslice.h - (yslice.y - old_rect.y);
       _window_add_uncover_rect(&yslice);
     }
@@ -894,14 +899,14 @@ Window * window_move (Window * w, int x, int y)
   if (x != NOMOVE)
   {
     if (x > screen->w - (OUTLINE+EDGE_SIZE)) x = screen->w - (OUTLINE+EDGE_SIZE);
-    else if (x < -(w->surf->w - (OUTLINE+EDGE_SIZE))) x = -(w->surf->w - (OUTLINE+EDGE_SIZE));
+    else if (x < -(w->w - (OUTLINE+EDGE_SIZE))) x = -(w->w - (OUTLINE+EDGE_SIZE));
     if (w->x != x) dirty = true;
     w->x = x;
   }
   if (y != NOMOVE)
   {
     if (y > screen->h - (OUTLINE+EDGE_SIZE)) y = screen->h - (OUTLINE+EDGE_SIZE);
-    else if (y < -(w->surf->h - (OUTLINE+EDGE_SIZE))) y = -(w->surf->h - (OUTLINE+EDGE_SIZE));
+    else if (y < -(w->h - (OUTLINE+EDGE_SIZE))) y = -(w->h - (OUTLINE+EDGE_SIZE));
     if (w->y != y) dirty = true;
     w->y = y;
   }
@@ -929,7 +934,7 @@ Window * window_move (Window * w, int x, int y)
       // Window moved to left, there's a blank to its right
       do_x = true;
       xslice = old_rect;
-      xslice.x = MAX(w->x + w->surf->w, xslice.x);
+      xslice.x = MAX(w->x + w->w, xslice.x);
       xslice.w = xslice.w - (xslice.x - old_rect.x);
       _window_add_uncover_rect(&xslice);
     }
@@ -944,7 +949,7 @@ Window * window_move (Window * w, int x, int y)
     {
       do_y = true;
       yslice = old_rect;
-      yslice.y = MAX(w->y + w->surf->h, yslice.y);
+      yslice.y = MAX(w->y + w->h, yslice.y);
       yslice.h = yslice.h - (yslice.y - old_rect.y);
       _window_add_uncover_rect(&yslice);
     }
@@ -1833,11 +1838,11 @@ bool lux_do_event (SDL_Event * event)
       int dy = event->motion.y - drag_offset.y;
       if (resize != RESIZE_NONE)
       {
-        int ow = _top_window->surf->w;
-        int oh = _top_window->surf->h;
+        int ow = _top_window->w;
+        int oh = _top_window->h;
         _window_resize(_top_window, resize, dx, dy);
-        ow -= _top_window->surf->w;
-        oh -= _top_window->surf->h;
+        ow -= _top_window->w;
+        oh -= _top_window->h;
         if (resize & RESIZE_L) ow *= -1;
         if (resize & RESIZE_T) oh *= -1;
         drag_offset.x -= ow;
