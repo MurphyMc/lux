@@ -1326,7 +1326,7 @@ static void rect_outline (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 c
 static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColors * wc)
 {
   if (!wc) wc = &theme.win;
-  SDL_LockSurface(surf);
+//  SDL_LockSurface(surf);
 
   SDL_Rect * rr;
   SDL_Rect rrrr;
@@ -1366,7 +1366,7 @@ static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColo
   r.x = rr->x + rr->w - EMBOSS_SIZE;
   rect_fill(surf, &r, br);
 
-  SDL_UnlockSurface(surf);
+//  SDL_UnlockSurface(surf);
 }
 
 void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color)
