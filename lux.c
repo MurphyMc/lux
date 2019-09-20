@@ -1427,6 +1427,9 @@ static int screen_width = 640, screen_height = 480;
 
 bool lux_init (int w, int h, const char * window_name)
 {
+  // We should probably break this down into a couple of functions
+  // so that we can initialize Lux independently of SDL (for
+  // integration into existing SDL apps).
   _key_init();
 
   screen_width = w;
