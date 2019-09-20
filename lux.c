@@ -7,6 +7,13 @@
 #include "font.h"
 
 
+#ifndef LUX_SWITCHER_KEY
+#define LUX_SWITCHER_KEY   SDLK_BACKQUOTE
+#endif
+#ifndef LUX_SWITCHER_MODS
+#define LUX_SWITCHER_MODS  (KMOD_LALT|KMOD_RALT)
+#endif
+
 
 SDL_Surface * screen;
 SDL_Surface * font;
@@ -307,6 +314,13 @@ static int _next_w_y = _window_default_top;
 Window * _top_window = NULL;
 Window * _mouse_window = NULL;
 
+static Window * _switcher_below = NULL;
+// When the window switcher is active, this is the window beneath where the
+// currently switch-preview window should be restored if it's not switched
+// to.  A special case is when _switcher_below == _top_window.  In that
+// case, the switcher is active and the current preview window is the same
+// window as when the switcher was activated.
+
 Window * window_dirty (Window * w)
 {
   w->dirty = true;
@@ -326,6 +340,7 @@ void _window_add_uncover_rect (SDL_Rect * r);
 void window_close (Window * w)
 {
   if (w == _mouse_window) _mouse_window = NULL;
+  if (w == _switcher_below) _switcher_below = NULL;
 
   _top_window = w->below;
   if (_top_window == w)
@@ -1455,6 +1470,25 @@ static void _lux_terminate ()
   SDL_Quit();
 }
 
+static void _unswitch ()
+{
+  // This undoes the currently-previewed window when the window switcher is
+  // active, returning to the original non-switched state.
+
+  Window * prv = _top_window;
+  window_raise(window_below(_top_window));
+
+  // Remove prv from window chain
+  prv->above->below = prv->below;
+  prv->below->above = prv->above;
+
+  // Insert prv above _switcher_below
+  prv->above = _switcher_below->above;
+  prv->below = _switcher_below;
+  prv->above->below = prv;
+  _switcher_below->above = prv;
+}
+
 
 // Variables used by event loop
 static bool quitting = false;
@@ -1521,10 +1555,48 @@ bool lux_do_event (SDL_Event * event)
   }
   else if (event->type == SDL_KEYDOWN)
   {
-    bool process = true;
+    bool process = _switcher_below ? false : true;
+
+    if ((event->key.keysym.sym == LUX_SWITCHER_KEY) && (event->key.keysym.mod & (LUX_SWITCHER_MODS)) && _top_window && !window_is_bottom(_top_window))
+    {
+      process = false;
+      bool upwards = event->key.keysym.mod & (KMOD_LSHIFT|KMOD_RSHIFT);
+      if (!_switcher_below || _switcher_below == _top_window)
+      {
+        Window * nxt = upwards ? _top_window->above : window_below(_top_window);
+        _switcher_below = nxt->below;
+        window_raise(nxt);
+      }
+      else
+      {
+        _unswitch();
+
+        Window * nxt = (!upwards) ? _switcher_below : _switcher_below->above->above;
+        if (nxt == _top_window)
+        {
+          _switcher_below = nxt;
+        }
+        else
+        {
+          _switcher_below = nxt->below;
+          window_raise(nxt);
+        }
+      }
+    }
+    else if (_switcher_below && (event->key.keysym.sym < SDLK_NUMLOCK || event->key.keysym.sym > SDLK_COMPOSE))
+    {
+      process = false;
+      if (_top_window && _switcher_below != _top_window)
+      {
+        // Hit a non-modifier while doing window switching -- cancel switching
+        _unswitch();
+      }
+      _switcher_below = NULL;
+    }
+
     if (event->key.keysym.sym >= SDLK_F1 && event->key.keysym.sym <= SDLK_F15)
     {
-      process = !_key_maybe_invoke_fkey(event->key.keysym.sym, event->key.keysym.mod);
+      process = process && !_key_maybe_invoke_fkey(event->key.keysym.sym, event->key.keysym.mod);
     }
 
     if (process && _top_window && _top_window->on_keydown)
@@ -1537,11 +1609,21 @@ bool lux_do_event (SDL_Event * event)
   }
   else if (event->type == SDL_KEYUP)
   {
-    if (_top_window && _top_window->on_keyup)
+    if (_switcher_below)
     {
-      if (_key_release(&event->key.keysym))
+      if (! (event->key.keysym.mod & (LUX_SWITCHER_MODS)) )
       {
-        _top_window->on_keyup(_top_window, &event->key.keysym, false);
+        _switcher_below = NULL;
+      }
+    }
+    else
+    {
+      if (_top_window && _top_window->on_keyup)
+      {
+        if (_key_release(&event->key.keysym))
+        {
+          _top_window->on_keyup(_top_window, &event->key.keysym, false);
+        }
       }
     }
   }
