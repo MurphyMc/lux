@@ -1157,7 +1157,6 @@ void lux_set_bg_color (uint32_t color)
 
 static void _draw_x_part (SDL_Surface * surf, int x, int y, int dx, int dy, int size, Uint32 color)
 {
-  Uint32 * pix = (Uint32*)surf->pixels;
   int xx = x, yy = y;
   for (int i = 0; i < size; i++)
   {
