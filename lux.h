@@ -203,4 +203,4 @@ void lux_terminate ();
 int lux_sysfont_w ();
 int lux_sysfont_h ();
 Theme lux_get_theme ();
-void draw_text (SDL_Surface * surf, const char * s, int x, int y, uint32_t color);
+void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color);

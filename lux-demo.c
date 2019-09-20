@@ -32,7 +32,7 @@ void my_mouse_handler (Window * w, int x, int y, int buttons, int type, bool rai
   char buf[64];
   if (type != SDL_MOUSEBUTTONDOWN) r.y += lux_sysfont_h();
   sprintf(buf, "%i at %i,%i", buttons, x, y);
-  draw_text(w->surf, buf, r.x, r.y, 0xffFFff);
+  text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
 }
 
 void my_mousemove_handler (Window * w, int x, int y, int buttons, int dx, int dy)
@@ -43,7 +43,7 @@ void my_mousemove_handler (Window * w, int x, int y, int buttons, int dx, int dy
   window_clear_client(w, 0x000000);
   char buf[64];
   sprintf(buf, "%i at %i,%i", buttons, x, y);
-  draw_text(w->surf, buf, r.x, r.y, 0xffFFff);
+  text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
 }
 
 void my_key_handler (Window * w, SDL_keysym * k, bool down)
@@ -56,7 +56,7 @@ void my_key_handler (Window * w, SDL_keysym * k, bool down)
   if (k->sym < 128 && k->sym >= ' ') c = (char)k->sym;
   if (!down) r.y += 14;
   sprintf(buf, "%s code:%i mod:%i char:%c", down?"KEY":"key",k->sym, k->mod, c);
-  draw_text(w->surf, buf, r.x, r.y, 0xffFFff);
+  text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
 }
 
 void my_f1_handler (FKey * fkey)

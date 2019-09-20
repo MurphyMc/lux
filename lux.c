@@ -1203,7 +1203,7 @@ static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColo
   SDL_UnlockSurface(surf);
 }
 
-void draw_text (SDL_Surface * surf, const char * s, int x, int y, uint32_t color)
+void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color)
 {
   static uint32_t prev_color = 0xff00ff;
   static SDL_Surface * prev_surf = 0;
@@ -1385,10 +1385,10 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
     int x = titler.x + titler.w/2 - w/2;
     int y = titler.y + titler.h/2 - FONT_H / 2;
 
-    draw_text(surf, caption, x+1, y+1, wc->title_shd);
-    if (TITLE_BOLD) draw_text(surf, caption, x+2, y+1, wc->title_shd);
-    draw_text(surf, caption, x, y, wc->title);
-    if (TITLE_BOLD) draw_text(surf, caption, x+1, y, wc->title);
+    text_draw(surf, caption, x+1, y+1, wc->title_shd);
+    if (TITLE_BOLD) text_draw(surf, caption, x+2, y+1, wc->title_shd);
+    text_draw(surf, caption, x, y, wc->title);
+    if (TITLE_BOLD) text_draw(surf, caption, x+1, y, wc->title);
 
     SDL_SetClipRect(surf, &ocr);
   }
