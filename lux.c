@@ -1392,24 +1392,27 @@ void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color
   SDL_Rect dstrect = {x,y,FONT_W,FONT_H};
 
   const char * c = s;
+  int xx = x, yy = y;
   while (*c)
   {
     if (*c == '\n')
     {
-      dstrect.x = x;
-      dstrect.y += FONT_H;
+      xx = x;
+      yy += FONT_H;
     }
     else if (*c == '\t')
     {
-      dstrect.x = 4 * FONT_W;
+      xx += 4 * FONT_W;
     }
     else if (*c >= ' ')
     {
+      dstrect.x = xx;
+      dstrect.y = yy;
       srcrect.y = FONT_H * (*c);
 
       SDL_BlitSurface(font, &srcrect, surf, &dstrect);
 
-      dstrect.x += FONT_W;
+      xx += FONT_W;
     }
 
     c++;
