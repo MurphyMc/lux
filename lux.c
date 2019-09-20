@@ -17,6 +17,7 @@
 
 SDL_Surface * screen;
 SDL_Surface * font;
+static SDL_Surface * scratch;
 
 
 // -- Color ------------------------------------------------------------------
@@ -243,6 +244,8 @@ static uint32_t _de_face_color = 0x808080;
 static uint32_t _de_title_color = 0xeeeeee;
 static uint32_t _de_title_shd_color = 0x3d3d3d;
 
+#define SCRATCH_W (OUTLINE+EDGE_SIZE+2*EMBOSS_SIZE+TITLEBAR_H)
+#define SCRATCH_H (OUTLINE+EDGE_SIZE+2*EMBOSS_SIZE+TITLEBAR_H)
 
 // -- Geometry ---------------------------------------------------------------
 
@@ -1167,89 +1170,102 @@ static void _draw_x_part (SDL_Surface * surf, int x, int y, int dx, int dy, int 
   }
 }
 
-static void draw_x (SDL_Surface * surf, int x, int y, int inner_size, int size, Uint32 color1, Uint32 color2)
+static void draw_x (SDL_Surface * surf, int rx, int ry, int inner_size, int size, Uint32 color1, Uint32 color2)
 {
+  color1 |= amask;
+  color2 |= amask;
+  SDL_Rect rs = { 0, 0,2*size+1,2*size+1};
+  SDL_FillRect(scratch, &rs, 0);
+
   size /= 2;
   if (inner_size <= 0) inner_size = size / 2;
 
-  SDL_LockSurface(surf);
-  Uint32 * pix = (Uint32*)surf->pixels;
-
   const int i = inner_size;
   const int s = size-inner_size;
+  const int x = size;
+  const int y = size;
 
   // Top
-  _draw_x_part(surf, x-0, y-i, -1, -1, size-inner_size, color2);
-  _draw_x_part(surf, x-0, y-i,  1, -1, size-inner_size, color1);
+  _draw_x_part(scratch, x-0, y-i, -1, -1, size-inner_size, color2);
+  _draw_x_part(scratch, x-0, y-i,  1, -1, size-inner_size, color1);
 
   // Bottom
-  _draw_x_part(surf, x-0, y+i, -1,  1, size-inner_size, color2);
-  _draw_x_part(surf, x-0, y+i,  1,  1, size-inner_size, color2);
+  _draw_x_part(scratch, x-0, y+i, -1,  1, size-inner_size, color2);
+  _draw_x_part(scratch, x-0, y+i,  1,  1, size-inner_size, color2);
 
   // Left
-  _draw_x_part(surf, x-i, y-0, -1, -1, size-inner_size, color1);
-  _draw_x_part(surf, x-i, y-0, -1,  1, size-inner_size, color1);
+  _draw_x_part(scratch, x-i, y-0, -1, -1, size-inner_size, color1);
+  _draw_x_part(scratch, x-i, y-0, -1,  1, size-inner_size, color1);
 
   // Right
-  _draw_x_part(surf, x+i, y-0,  1, -1, size-inner_size, color2);
-  _draw_x_part(surf, x+i, y-0,  1,  1, size-inner_size, color2);
+  _draw_x_part(scratch, x+i, y-0,  1, -1, size-inner_size, color2);
+  _draw_x_part(scratch, x+i, y-0,  1,  1, size-inner_size, color2);
 
 
   // TL
-  _draw_x_part(surf, x-s-1, y-i-s+1, -1,  1, inner_size-0, color1);
+  _draw_x_part(scratch, x-s-1, y-i-s+1, -1,  1, inner_size-0, color1);
 
   // TR
-  _draw_x_part(surf, x+s+0, y-i-s+1,  1,  1, inner_size-1, color1);
+  _draw_x_part(scratch, x+s+0, y-i-s+1,  1,  1, inner_size-1, color1);
 
   // BL
-  _draw_x_part(surf, x-i-s, y+s,  1,  1, inner_size, color1);
+  _draw_x_part(scratch, x-i-s, y+s,  1,  1, inner_size, color1);
 
   // BR
-  _draw_x_part(surf, x+s, y+i+s-1,  1,  -1, inner_size, color2);
+  _draw_x_part(scratch, x+s, y+i+s-1,  1,  -1, inner_size, color2);
 
-  SDL_UnlockSurface(surf);
+  SDL_Rect rd = {rx-size,ry-size,2*size+1,2*size+1};
+  SDL_BlitSurface(scratch, &rs, surf, &rd);
 }
 
 static void draw_corner_down (SDL_Surface * surf, int x, int y, int size, Uint32 color1, Uint32 color2)
 {
   if (size == 0) return;
-  // surf should be locked
-  Uint32 * pix = (Uint32*)surf->pixels;
-  pix += surf->pitch/4 * y + x;
+  SDL_Rect rs = {0,0,size,size};
+  SDL_FillRect(scratch, &rs, 0);
 
-  for (int y = 0; y < size; y++)
+  Uint32 * pix = (Uint32*)scratch->pixels;
+  color1 |= amask;
+  color2 |= amask;
+
+  for (int yy = 0; yy < size; yy++)
   {
-    for (int x = 0; x <= y; x++)
+    for (int xx = 0; xx <= yy; xx++)
     {
-      pix[x] = color1;
+      pix[xx] = color1;
     }
-    for (int x = y + 1; x < size; x++)
+    for (int xx = yy + 1; xx < size; xx++)
     {
-      pix[x] = color2;
+      pix[xx] = color2;
     }
-    pix += surf->pitch/4;
+    pix += scratch->pitch/4;
   }
+  SDL_Rect rd = {x,y,size,size};
+  SDL_BlitSurface(scratch, &rs, surf, &rd);
 }
 
 static void draw_corner_up (SDL_Surface * surf, int x, int y, int size, Uint32 color1, Uint32 color2)
 {
   if (size == 0) return;
-  // surf should be locked
-  Uint32 * pix = (Uint32*)surf->pixels;
-  pix += surf->pitch/4 * y + x;
+  Uint32 * pix = (Uint32*)scratch->pixels;
+  color1 |= amask;
+  color2 |= amask;
 
-  for (int y = 0; y < size; y++)
+  for (int yy = 0; yy < size; yy++)
   {
-    for (int x = 0; x < size-y; x++)
+    for (int xx = 0; xx < size-yy; xx++)
     {
-      pix[x] = color1;
+      pix[xx] = color1;
     }
-    for (int x = size-y; x < size; x++)
+    for (int xx = size-yy; xx < size; xx++)
     {
-      pix[x] = color2;
+      pix[xx] = color2;
     }
-    pix += surf->pitch/4;
+    pix += scratch->pitch/4;
   }
+  SDL_Rect rs = {0,0,size,size};
+  SDL_Rect rd = {x,y,size,size};
+  SDL_BlitSurface(scratch, &rs, surf, &rd);
 }
 
 static void draw_rect (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 color)
@@ -1381,51 +1397,67 @@ void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color
 
 static void draw_h_notch (SDL_Surface * surf, int x, int y, Uint32 color1, Uint32 color2)
 {
+  color1 |= amask;
+  color2 |= amask;
+  SDL_Rect rs = {0,0,EDGE_SIZE,2*EMBOSS_SIZE};
+  SDL_FillRect(scratch, &rs, 0);
+  SDL_Rect rd = {x,y,rs.w,rs.h};
+
   SDL_Rect notch;
-  notch.x = x+EMBOSS_SIZE;
+  notch.x = EMBOSS_SIZE;
   notch.w = EDGE_SIZE-2*EMBOSS_SIZE;
   notch.h = EMBOSS_SIZE;
-  notch.y = y;
+  notch.y = 0;
 
-  draw_corner_up(surf, x, y, EMBOSS_SIZE, color1, color2);
+  draw_corner_up(scratch, 0, 0, EMBOSS_SIZE, color1, color2);
 
   // We draw this with size-1 because it looks a lot better...
   // .. but I'm not sure it will if we tweak the default sizes.
   // The basic idea is that we don't want the top-right corner to cut
   // all the way to the right edge.
-  draw_corner_up(surf, x+EDGE_SIZE-1*EMBOSS_SIZE, y+EMBOSS_SIZE, EMBOSS_SIZE-1, color1, color2);
+  draw_corner_up(scratch, EDGE_SIZE-1*EMBOSS_SIZE, EMBOSS_SIZE, EMBOSS_SIZE-1, color1, color2);
 
-  SDL_FillRect(surf, &notch, color2);
+  SDL_FillRect(scratch, &notch, color2);
   notch.y += EMBOSS_SIZE;
-  SDL_FillRect(surf, &notch, color1);
+  SDL_FillRect(scratch, &notch, color1);
+
+  SDL_BlitSurface(scratch, &rs, surf, &rd);
 }
 
 static void draw_v_notch (SDL_Surface * surf, int x, int y, Uint32 color1, Uint32 color2)
 {
+  color1 |= amask;
+  color2 |= amask;
+  SDL_Rect rs = {0,0,2*EMBOSS_SIZE,EDGE_SIZE};
+  SDL_FillRect(scratch, &rs, 0);
+  SDL_Rect rd = {x,y,rs.w,rs.h};
+
   SDL_Rect notch;
-  notch.x = x;
+  notch.x = 0;
   notch.h = EDGE_SIZE-2*EMBOSS_SIZE;
   notch.w = EMBOSS_SIZE;
-  notch.y = y+EMBOSS_SIZE;
+  notch.y = EMBOSS_SIZE;
 
-  draw_corner_up(surf, x, y, EMBOSS_SIZE, color1, color2);
+  draw_corner_up(scratch, x, y, EMBOSS_SIZE, color1, color2);
 
   // We draw this with size-1 because it looks a lot better...
   // .. but I'm not sure it will if we tweak the default sizes.
   // The basic idea is that we don't want the top-right corner to cut
   // all the way to the right edge.
-  draw_corner_up(surf, x+EMBOSS_SIZE,y+EDGE_SIZE-1*EMBOSS_SIZE, EMBOSS_SIZE-1, color1, color2);
+  draw_corner_up(scratch, x+EMBOSS_SIZE,y+EDGE_SIZE-1*EMBOSS_SIZE, EMBOSS_SIZE-1, color1, color2);
 
-  SDL_FillRect(surf, &notch, color2);
+  SDL_FillRect(scratch, &notch, color2);
   notch.x += EMBOSS_SIZE;
-  SDL_FillRect(surf, &notch, color1);
+  SDL_FillRect(scratch, &notch, color1);
+
+  SDL_BlitSurface(scratch, &rs, surf, &rd);
 }
 
 static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char * caption, bool active, int button_state, int flags)
 {
   WinColors * wc = active ? &theme.win : &theme.winde;
 
-  SDL_LockSurface(surf);
+//  SDL_LockSurface(surf);
   SDL_Rect rrrr;
   SDL_Rect * rr = &rrrr;
   if (rrr)
@@ -1500,8 +1532,8 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
   draw_frame(surf, rr, false, wc);
   rect_shrink(rr, EMBOSS_SIZE);
   SDL_FillRect(surf, rr, wc->face);
+//  SDL_UnlockSurface(surf);
 
-  SDL_UnlockSurface(surf);
 
   if (caption)
   {
@@ -1577,7 +1609,9 @@ bool lux_init (int w, int h, const char * window_name)
 
   font = SDL_CreateRGBSurfaceFrom(font_raw, FONT_W, FONT_H * 256, 8, FONT_W, 0, 0, 0, 0);
 
-  if (!screen || !font) return false;
+  scratch = SDL_CreateRGBSurface(SDL_SWSURFACE, SCRATCH_W, SCRATCH_H, 32, rmask, gmask, bmask, amask);
+
+  if (!screen || !font || !scratch) return false;
 
   SDL_Flip(screen);
 
@@ -1600,6 +1634,7 @@ static void _lux_terminate ()
   free(_propnames);
 
   SDL_FreeSurface(font);
+  SDL_FreeSurface(scratch);
   SDL_Quit();
 }
 
