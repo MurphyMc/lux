@@ -1,5 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "lux.h"
 #include <stdlib.h>
 #include <string.h>

@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "lux.h"
 #include <unistd.h>
 
