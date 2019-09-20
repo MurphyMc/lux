@@ -564,6 +564,7 @@ static void _window_mark_dirty_intersecting (SDL_Rect * r)
     if (rect_overlaps(r, &wr))
     {
       window_dirty(w);
+      window_dirty_chrome(w);
       if (rect_covered_by(r, &wr)) break;
     }
 
@@ -769,7 +770,11 @@ bool _window_resize (Window * w, int resize, int x, int y)
     {
       SDL_Rect wr;
       window_get_rect(w, &wr);
-      if (rect_overlaps(&old_rect, &wr)) w->dirty = true;
+      if (rect_overlaps(&old_rect, &wr))
+      {
+        w->dirty = true;
+        w->dirty_chrome = true;
+      }
 
       w = window_below(w);
     }
@@ -842,6 +847,7 @@ Window * window_move (Window * w, int x, int y)
     }
 
     window_dirty(w);
+    window_dirty_chrome(w);
 
     // We might consider doing intersections only on the slices.
     // That's more intersection tests but maybe less redraw.
@@ -851,7 +857,11 @@ Window * window_move (Window * w, int x, int y)
     {
       SDL_Rect wr;
       window_get_rect(w, &wr);
-      if (rect_overlaps(&old_rect, &wr)) w->dirty = true;
+      if (rect_overlaps(&old_rect, &wr))
+      {
+        w->dirty = true;
+        w->dirty_chrome = true;
+      }
 
       w = window_below(w);
     }
