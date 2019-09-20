@@ -311,8 +311,8 @@ static int _window_top_x = 20;
 static int _next_w_x = -1; // _window_top_x;
 static int _next_w_y = _window_default_top;
 
-Window * _top_window = NULL;
-Window * _mouse_window = NULL;
+static Window * _top_window = NULL;
+static Window * _mouse_window = NULL;
 
 static Window * _switcher_below = NULL;
 // When the window switcher is active, this is the window beneath where the
