@@ -321,6 +321,9 @@ static Window * _switcher_below = NULL;
 // case, the switcher is active and the current preview window is the same
 // window as when the switcher was activated.
 
+static Window * captured = NULL;
+
+
 Window * window_dirty (Window * w)
 {
   w->dirty = true;
@@ -341,6 +344,7 @@ void window_close (Window * w)
 {
   if (w == _mouse_window) _mouse_window = NULL;
   if (w == _switcher_below) _switcher_below = NULL;
+  if (w == captured) captured = NULL; // Do we need to do more here?
 
   _top_window = w->below;
   if (_top_window == w)
@@ -366,7 +370,6 @@ void window_close (Window * w)
   }
   free(w);
 
-  //TODO: Release captures
 }
 
 static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char * caption, bool active, int button_state, int flags);
@@ -1499,7 +1502,6 @@ static Point drag_offset;
 static SDL_Rect resize_start;
 static bool drag = false;
 static int resize = RESIZE_NONE;
-static Window * captured = NULL;
 static int button_captured = WINDOW_BUTTON_NONE;
 
 void lux_terminate ()
