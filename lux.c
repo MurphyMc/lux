@@ -27,9 +27,9 @@ SDL_Surface * font;
   Uint32 bmask = 0x0000ff00;
   Uint32 amask = 0x000000ff;
 #else
-  Uint32 rmask = 0x000000ff;
+  Uint32 bmask = 0x000000ff;
   Uint32 gmask = 0x0000ff00;
-  Uint32 bmask = 0x00ff0000;
+  Uint32 rmask = 0x00ff0000;
   Uint32 amask = 0xff000000;
 #endif
 
@@ -1439,6 +1439,10 @@ bool lux_init (int w, int h, const char * window_name)
   screen_height = h;
   screen = SDL_SetVideoMode(screen_width, screen_height, 32, 0);
   lux_set_bg_color(_bg_color);
+
+  //TODO: Use this for generating colors?
+  //const SDL_VideoInfo * info = SDL_GetVideoInfo();
+  // info->vfmt->Rmask, info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask
 
   SDL_FillRect(screen, NULL, _bg_color_sdl);
 
