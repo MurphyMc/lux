@@ -1476,6 +1476,13 @@ bool lux_init (int w, int h, const char * window_name)
 
 static void _lux_terminate ()
 {
+  Window * w = _top_window;
+  while (w)
+  {
+    window_close(w);
+    w = window_below(w);
+  }
+
   SDL_FreeSurface(font);
   SDL_Quit();
 }
