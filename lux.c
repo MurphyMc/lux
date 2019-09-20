@@ -2013,10 +2013,10 @@ bool lux_do_event (SDL_Event * event)
             rect_shrink(&rr, EDGE_SIZE);
 
             if (drag_offset.x < rr.x) resize |= RESIZE_L;
-            else if (drag_offset.x > rr.w+rr.x) resize |= RESIZE_R;
+            else if (drag_offset.x >= rr.w+rr.x) resize |= RESIZE_R;
 
             if (drag_offset.y < rr.y) resize |= RESIZE_T;
-            else if (drag_offset.y > rr.h+rr.y) resize |= RESIZE_B;
+            else if (drag_offset.y >= rr.h+rr.y) resize |= RESIZE_B;
 
             if (resize)
             {
@@ -2032,10 +2032,10 @@ bool lux_do_event (SDL_Event * event)
               if (cr.h < 0) { cr.y = rr.y; cr.h = rr.h;};
               window_rect_screen_to_window(w, &cr);
 
-              if (drag_offset.x > cr.w+cr.x) resize |= RESIZE_R;
+              if (drag_offset.x >= cr.w+cr.x) resize |= RESIZE_R;
               else if (drag_offset.x < cr.x) resize |= RESIZE_L;
 
-              if (drag_offset.y > cr.h+cr.y) resize |= RESIZE_B;
+              if (drag_offset.y >= cr.h+cr.y) resize |= RESIZE_B;
               else if (drag_offset.y < cr.y) resize |= RESIZE_T;
 
               if (resize & RESIZE_B && resize & RESIZE_T) resize ^= RESIZE_T;
