@@ -59,9 +59,13 @@ void my_key_handler (Window * w, SDL_keysym * k, bool down)
   text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
 }
 
+static int num = 0;
+
 void my_f1_handler (FKey * fkey)
 {
-  Window * w = window_create(200, 100, NULL, WIN_F_RESIZE, NULL);
+  char buf[64];
+  sprintf(buf, "Window %i", ++num);
+  Window * w = window_create(200, 100, buf, WIN_F_RESIZE, NULL);
   w->on_mousedown = my_mouse_handler;
   w->on_mouseup = my_mouse_handler;
   w->on_mousemove = my_mousemove_handler;
