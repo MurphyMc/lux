@@ -230,18 +230,18 @@ static uint32_t _bg_color;
 static Uint32 _bg_color_sdl; // In SDL form for FillRect
 
 
-static uint32_t _outline_color = 0x000000;
-static uint32_t _edgetl_color = 0x9b9ccc;
-static uint32_t _edgebr_color = 0x3b3b5c;
-static uint32_t _face_color = 0x8181b5;
-static uint32_t _title_color = 0xeeeef7;
-static uint32_t _title_shd_color = 0x3b3b5c;
+static uint32_t _outline_color =      0x000000;
+static uint32_t _edgetl_color =       0x9b9ccc;
+static uint32_t _edgebr_color =       0x3b3b5c;
+static uint32_t _face_color =         0x8181b5;
+static uint32_t _title_color =        0xeeeef7;
+static uint32_t _title_shd_color =    0x3b3b5c;
 
-static uint32_t _de_outline_color = 0x000000;
-static uint32_t _de_edgetl_color = 0xa8a8a8;
-static uint32_t _de_edgebr_color = 0x3d3d3d;
-static uint32_t _de_face_color = 0x808080;
-static uint32_t _de_title_color = 0xeeeeee;
+static uint32_t _de_outline_color =   0x000000;
+static uint32_t _de_edgetl_color =    0xa8a8a8;
+static uint32_t _de_edgebr_color =    0x3d3d3d;
+static uint32_t _de_face_color =      0x808080;
+static uint32_t _de_title_color =     0xeeeeee;
 static uint32_t _de_title_shd_color = 0x3d3d3d;
 
 #define SCRATCH_W (OUTLINE+EDGE_SIZE+2*EMBOSS_SIZE+TITLEBAR_H)
@@ -1619,14 +1619,14 @@ bool lux_init (int w, int h, const char * window_name)
   theme.winde.face = mapcolor(screen, _de_face_color);
   theme.winde.outline = mapcolor(screen, _de_outline_color);
   theme.winde.title = mapcolor(screen, _de_title_color);
-  theme.winde.title_shd = mapcolor(screen, _de_title_shd_color);;
+  theme.winde.title_shd = mapcolor(screen, _de_title_shd_color);
 
   theme.win.edge_tl = mapcolor(screen, _edgetl_color);
   theme.win.edge_br = mapcolor(screen, _edgebr_color);
   theme.win.face = mapcolor(screen, _face_color);
   theme.win.outline = mapcolor(screen, _outline_color);
   theme.win.title = mapcolor(screen, _title_color);
-  theme.win.title_shd = mapcolor(screen, _title_shd_color);;
+  theme.win.title_shd = mapcolor(screen, _title_shd_color);
 
   SDL_SetCursor(create_cursor_xpm(arrow));
 
