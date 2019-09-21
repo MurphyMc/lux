@@ -1577,18 +1577,6 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
 }
 
 
-static void draw_randcolor (Window * w)
-{
-  if (w->opaque_int == 0)
-  {
-    w->opaque_int = (rand() & 0xff) << 16 | ((rand() & 0xff) << 8) | ((rand() & 0xff) << 0);
-  }
-  SDL_Rect r;
-  window_get_client_rect(w, &r);
-  SDL_FillRect(w->surf, &r, w->opaque_int);
-}
-
-
 
 static int screen_width = 640, screen_height = 480;
 
