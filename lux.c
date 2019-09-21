@@ -1330,7 +1330,6 @@ static void rect_outline (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 c
 static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColors * wc)
 {
   if (!wc) wc = &theme.win;
-//  SDL_LockSurface(surf);
 
   SDL_Rect * rr;
   SDL_Rect rrrr;
@@ -1369,8 +1368,6 @@ static void draw_frame (SDL_Surface * surf, SDL_Rect * rrr, bool pushed, WinColo
   rect_fill(surf, &r, tl);
   r.x = rr->x + rr->w - EMBOSS_SIZE;
   rect_fill(surf, &r, br);
-
-//  SDL_UnlockSurface(surf);
 }
 
 void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color)
@@ -1486,7 +1483,6 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
 {
   WinColors * wc = active ? &theme.win : &theme.winde;
 
-//  SDL_LockSurface(surf);
   SDL_Rect rrrr;
   SDL_Rect * rr = &rrrr;
   if (rrr)
@@ -1546,7 +1542,6 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
   SDL_Rect titler = *rr;
 
   // Upper-right button
-  //TODO: "Press" button in.
   bool pressed = (button_state & WINDOW_BUTTON_BIT(-1));
   rr->x += rr->w - rr->h;
   rr->w = rr->h;
@@ -1561,8 +1556,6 @@ static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char *
   draw_frame(surf, rr, false, wc);
   rect_shrink(rr, EMBOSS_SIZE);
   SDL_FillRect(surf, rr, wc->face);
-//  SDL_UnlockSurface(surf);
-
 
   if (caption)
   {
