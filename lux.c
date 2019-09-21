@@ -28,9 +28,9 @@ static SDL_Surface * scratch;
   Uint32 bmask = 0x0000ff00;
   Uint32 amask = 0x000000ff;
 #else
-  Uint32 bmask = 0x000000ff;
+  Uint32 rmask = 0x000000ff;
   Uint32 gmask = 0x0000ff00;
-  Uint32 rmask = 0x00ff0000;
+  Uint32 bmask = 0x00ff0000;
   Uint32 amask = 0xff000000;
 #endif
 
@@ -491,7 +491,7 @@ Window * window_create (int w, int h, const char * caption, int flags, void* (*p
   wnd->pix_alloc = pix_alloc;
   void * pixels = pix_alloc(4 * w * h);
   memset(pixels, 0x7f, 4 * w * h);
-  wnd->surf = SDL_CreateRGBSurfaceFrom(pixels, w, h, 32, w*4, bmask, gmask, rmask, 0);
+  wnd->surf = SDL_CreateRGBSurfaceFrom(pixels, w, h, 32, w*4, rmask, gmask, bmask, 0);
   if (_next_w_x == -1) _next_w_x = _window_top_x;
   wnd->x = _next_w_x;
   wnd->y = _next_w_y;
@@ -772,7 +772,7 @@ bool _window_resize (Window * w, int resize, int x, int y)
   void * new_pixels = w->pix_alloc(4*ww*hh);
   if (!new_pixels) return false;
 
-  SDL_Surface * new_surf = SDL_CreateRGBSurfaceFrom(new_pixels, ww, hh, 32, ww*4, bmask, gmask, rmask, 0);
+  SDL_Surface * new_surf = SDL_CreateRGBSurfaceFrom(new_pixels, ww, hh, 32, ww*4, rmask, gmask, bmask, 0);
   if (!new_surf)
   {
     if (w->pix_free) w->pix_free(w, new_pixels);
@@ -1603,12 +1603,16 @@ bool lux_init (int w, int h, const char * window_name)
   screen_height = h;
   screen = SDL_SetVideoMode(screen_width, screen_height, 32, 0);
   lux_set_bg_color(_bg_color);
-
-  //TODO: Use this for generating colors?
-  //const SDL_VideoInfo * info = SDL_GetVideoInfo();
-  // info->vfmt->Rmask, info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask
-
   SDL_FillRect(screen, NULL, _bg_color_sdl);
+
+  const SDL_VideoInfo * info = SDL_GetVideoInfo();
+  if (info->vfmt->Rmask > info->vfmt->Bmask)
+  {
+    // Looks like maybe we want BGR, not RGB, so swap masks
+    int tmp = rmask;
+    rmask = bmask;
+    bmask = tmp;
+  }
 
   theme.winde.edge_tl = mapcolor(screen, _de_edgetl_color);
   theme.winde.edge_br = mapcolor(screen, _de_edgebr_color);
