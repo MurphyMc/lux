@@ -26,37 +26,34 @@ static bool parse_dimensions (const char * d, int * ww, int * hh)
 
 void my_mouse_handler (Window * w, int x, int y, int buttons, int type, bool raised)
 {
-  SDL_Rect r;
-  window_get_client_rect(w, &r);
+  int yy = 0;
   window_clear_client(w, 0x330033);
   char buf[64];
-  if (type != SDL_MOUSEBUTTONDOWN) r.y += lux_sysfont_h();
+  if (type != SDL_MOUSEBUTTONDOWN) yy += lux_sysfont_h();
   sprintf(buf, "%i at %i,%i", buttons, x, y);
-  text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
+  text_draw(w->surf, buf, 0, yy, 0xffFFff);
 }
 
 void my_mousemove_handler (Window * w, int x, int y, int buttons, int dx, int dy)
 {
   if (window_is_top(w)) return;
-  SDL_Rect r;
-  window_get_client_rect(w, &r);
   window_clear_client(w, 0x000000);
   char buf[64];
   sprintf(buf, "%i at %i,%i", buttons, x, y);
-  text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
+  text_draw(w->surf, buf, 0, 0, 0xffFFff);
 }
 
 void my_key_handler (Window * w, SDL_keysym * k, bool down)
 {
   SDL_Rect r;
-  window_get_client_rect(w, &r);
+  int yy = 0;
   window_clear_client(w, 0);
   char buf[64];
   char c = '?';
   if (k->sym < 128 && k->sym >= ' ') c = (char)k->sym;
-  if (!down) r.y += 14;
+  if (!down) yy += lux_sysfont_h();
   sprintf(buf, "%s code:%i mod:%i char:%c", down?"KEY":"key",k->sym, k->mod, c);
-  text_draw(w->surf, buf, r.x, r.y, 0xffFFff);
+  text_draw(w->surf, buf, 0, yy, 0xffFFff);
 }
 
 static int num = 0;
@@ -65,7 +62,7 @@ void my_f1_handler (FKey * fkey)
 {
   char buf[64];
   sprintf(buf, "Window %i", ++num);
-  Window * w = window_create(200, 100, buf, WIN_F_RESIZE, NULL);
+  Window * w = window_create(200, 100, buf, WIN_F_RESIZE|WIN_F_AUTOSURF);
   w->on_mousedown = my_mouse_handler;
   w->on_mouseup = my_mouse_handler;
   w->on_mousemove = my_mousemove_handler;

@@ -355,11 +355,27 @@ Window * window_dirty_chrome (Window * w)
 
 void _window_add_uncover_rect (SDL_Rect * r);
 
+void _resize_stop ()
+{
+  Window * w = _top_window;
+  if ( (resize != RESIZE_NONE) && (w->on_resized) ) w->on_resized(w);
+  resize = RESIZE_NONE;
+}
+
+void _reset_state ()
+{
+  // We used to only deactivate the switcher if the active window was being
+  // closed.  That may be okay, but for now, we do it when opening a new
+  // window also.
+  _switcher_below = NULL;
+  _resize_stop();
+}
+
 void window_close (Window * w)
 {
   if (w == _mouse_window) _mouse_window = NULL;
-  if (w == _switcher_below) _switcher_below = NULL;
   if (w == captured) captured = NULL; // Do we need to do more here?
+  _reset_state();
 
   _top_window = w->below;
   if (_top_window == w)
@@ -376,14 +392,7 @@ void window_close (Window * w)
   SDL_Rect r;
   window_get_rect(w, &r);
   _window_add_uncover_rect(&r);
-  void * pix = w->surf->pixels;
-  SDL_FreeSurface(w->surf);
-  if (pix)
-  {
-    if (w->pix_free) w->pix_free(w, pix);
-    else free(pix);
-  }
-
+  if (w->surf) SDL_FreeSurface(w->surf);
   for (int i = 0; i < w->props_count; i++)
   {
     WindowProp * p = w->props+i;
@@ -489,10 +498,10 @@ int window_prop_id (const char * propname)
 
 static void draw_window_chrome (SDL_Surface * surf, SDL_Rect * rrr, const char * caption, bool active, int button_state, int flags);
 
-Window * window_create (int w, int h, const char * caption, int flags, void* (*pix_alloc)(size_t))
+Window * window_create (int w, int h, const char * caption, int flags)
 {
-  w += OUTLINE*2 + EDGE_SIZE*2;
-  h += OUTLINE*2 + EDGE_SIZE*2 + EMBOSS_SIZE*2 + TITLEBAR_H;
+  _reset_state();
+
   Window * wnd = (Window *)calloc(sizeof(Window), 1);
   window_dirty(wnd);
   wnd->dirty_chrome = true;
@@ -500,16 +509,17 @@ Window * window_create (int w, int h, const char * caption, int flags, void* (*p
   wnd->on_close = window_close;
   wnd->bg_color = _face_color;
 
-  if (!pix_alloc) pix_alloc = malloc;
-  wnd->pix_alloc = pix_alloc;
-  void * pixels = pix_alloc(4 * w * h);
-  memset(pixels, 0x7f, 4 * w * h);
-  wnd->surf = SDL_CreateRGBSurfaceFrom(pixels, w, h, 32, w*4, rmask, gmask, bmask, 0);
+  if (flags & WIN_F_AUTOSURF)
+  {
+    wnd->surf = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, rmask, gmask, bmask, 0);
+    window_clear_client(wnd, wnd->bg_color);
+  }
+
   if (_next_w_x == -1) _next_w_x = _window_top_x;
   wnd->x = _next_w_x;
   wnd->y = _next_w_y;
-  wnd->w = w;
-  wnd->h = h;
+  wnd->w = w + OUTLINE*2 + EDGE_SIZE*2;
+  wnd->h = h + OUTLINE*2 + EDGE_SIZE*2 + EMBOSS_SIZE*2 + TITLEBAR_H;
   if (h + _next_w_y + 20 > screen->h && h + _window_default_top < screen->h)
   {
     _window_top_x += 50;
@@ -738,9 +748,7 @@ Window * window_clear_client (Window * w, uint32_t color)
     SDL_Color z;
     sdlcolor(color, &z);
     Uint32 c = SDL_MapRGB(w->surf->format, z.r, z.g, z.b);
-    SDL_Rect r;
-    window_get_client_rect(w, &r);
-    SDL_FillRect(w->surf, &r, c);
+    SDL_FillRect(w->surf, NULL, c);
   }
   window_dirty(w);
   return w;
@@ -783,40 +791,38 @@ bool _window_resize (Window * w, int resize, int x, int y)
 
   if (!growx && !growy && !shrinkx && !shrinky) return true; // or false?
 
-  void * new_pixels = w->pix_alloc(4*ww*hh);
-  if (!new_pixels) return false;
-
-  SDL_Surface * new_surf = SDL_CreateRGBSurfaceFrom(new_pixels, ww, hh, 32, ww*4, rmask, gmask, bmask, 0);
-  if (!new_surf)
+  int cw = ww - (OUTLINE*2 + EDGE_SIZE*2);
+  int ch = hh - (OUTLINE*2 + EDGE_SIZE*2 + EMBOSS_SIZE*2 + TITLEBAR_H);
+  SDL_Surface * old_surf = NULL;
+  if (w->flags & WIN_F_AUTOSURF)
   {
-    if (w->pix_free) w->pix_free(w, new_pixels);
-    else free(new_pixels);
-    return false;
+    old_surf = w->surf;
+    SDL_Surface * new_surf = SDL_CreateRGBSurface(SDL_SWSURFACE, cw, ch, 32, rmask, gmask, bmask, 0);
+    if (!new_surf) return false;
+
+    w->surf = new_surf;
   }
 
   w->w = ww;
   w->h = hh;
 
-  SDL_Surface * old_surf = w->surf;
-
-  w->surf = new_surf;
   w->x = xx;
   w->y = yy;
 
   bool retain = true;
   if (w->on_resize) retain = !w->on_resize(w, old_surf);
 
-  if (retain)
+  if (retain && old_surf && w->surf)
   {
-    SDL_BlitSurface(old_surf, NULL, new_surf, NULL);
+    SDL_BlitSurface(old_surf, NULL, w->surf, NULL);
     Uint32 bgcolor = mapcolor(w->surf, w->bg_color);
 
     if (growx)
     {
       SDL_Rect r;
-      r.x = old_crect.w + old_crect.x;
+      r.x = old_crect.w;
       r.y = 0;
-      r.w = w->w - r.x;
+      r.w = cw - old_crect.w;
       r.h = w->h;
       SDL_FillRect(w->surf, &r, bgcolor);
     }
@@ -824,16 +830,13 @@ bool _window_resize (Window * w, int resize, int x, int y)
     {
       SDL_Rect r;
       r.x = 0;
-      r.y = old_crect.h + old_crect.y;
+      r.y = old_crect.h;
       r.w = w->w;
-      r.h = w->h - old_crect.h;
+      r.h = ch - old_crect.h;
       SDL_FillRect(w->surf, &r, bgcolor);
     }
   }
-
-  if (w->pix_free && old_surf->pixels) w->pix_free(w, old_surf->pixels);
-  else free(old_surf->pixels);
-  SDL_FreeSurface(old_surf);
+  if (old_surf) SDL_FreeSurface(old_surf);
 
   window_dirty(w);
   window_dirty_chrome(w);
@@ -1088,6 +1091,7 @@ void _window_draw_mark_intersecting_above (Window * w)
       if (rect_overlaps(&wr, &r))
       {
         w->will_draw = true;
+        w->dirty_chrome = true;
         _window_draw_mark_intersecting_above(w);
       }
     }
@@ -1132,7 +1136,7 @@ bool _window_draw_all (bool force)
     {
       if (w->dirty_chrome)
       {
-        draw_window_chrome(w->surf, NULL, w->title, w == _top_window, w->button_state, w->flags);
+        draw_window_chrome(screen, &r, w->title, w == _top_window, w->button_state, w->flags);
         w->dirty_chrome = false;
       }
       w->will_draw = false;
@@ -1140,9 +1144,51 @@ bool _window_draw_all (bool force)
       {
         // Pass
       }
-      else if (w->surf->pixels)
+      else
       {
-        SDL_BlitSurface(w->surf, NULL, screen, &r);
+        if (w->surf && w->surf->pixels)
+        {
+          SDL_Rect cr;
+          window_get_client_rect(w, &cr);
+          window_rect_window_to_screen(w, &cr);
+          Uint32 bgcolor = mapcolor(screen, w->bg_color);
+          if (cr.w > w->surf->w || cr.h > w->surf->h)
+          {
+            // right edge
+            SDL_Rect r = cr;
+            r.w -= w->surf->w;
+            r.h = w->surf->h;
+            r.x += w->surf->w;
+            r.y += 0;
+            SDL_FillRect(screen, &r, bgcolor);
+            // bottom edge
+            r = cr;
+            r.h -= w->surf->h;
+            r.w = w->surf->w;
+            r.y += w->surf->h;
+            r.x += 0;
+            SDL_FillRect(screen, &r, bgcolor);
+            // corner
+            r = cr;
+            r.w -= w->surf->w;
+            r.h -= w->surf->h;
+            r.x += w->surf->w;
+            r.y += w->surf->h;
+            SDL_FillRect(screen, &r, bgcolor);
+          }
+          SDL_Rect r = {0,0,w->surf->w,w->surf->h};
+          if (cr.w < r.w) r.w = cr.w;
+          if (cr.h < r.h) r.h = cr.h;
+          SDL_BlitSurface(w->surf, &r, screen, &cr);
+        }
+        else
+        {
+          // No backing surface; just clear it
+          SDL_Rect cr;
+          window_get_client_rect(w, &cr);
+          window_rect_window_to_screen(w, &cr);
+          SDL_FillRect(screen, &cr, mapcolor(screen, w->bg_color));
+        }
       }
       any = true;
     }
@@ -1884,6 +1930,8 @@ bool lux_do_event (SDL_Event * event)
   else if (event->type == SDL_MOUSEBUTTONUP)
   {
     bool all_up = (SDL_GetMouseState(NULL, NULL) == 0);
+
+    _resize_stop();
 
     drag = false;
     resize = RESIZE_NONE;

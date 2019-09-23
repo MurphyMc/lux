@@ -123,7 +123,8 @@ void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color);
 
 // -- Window ----------------------------------------------------------------
 
-#define WIN_F_RESIZE 1 // Window is resizable
+#define WIN_F_RESIZE   1 // Window is resizable
+#define WIN_F_AUTOSURF 2 // Lux maintain's window's "surf"
 
 #define WIN_MIN_W 40
 #define WIN_MIN_H 40
@@ -150,8 +151,6 @@ typedef struct Window
   int w, h;
   int flags;
   uint32_t bg_color;
-  void* (*pix_alloc)(size_t);
-  void (*pix_free)(struct Window *, void *);
   int last_mouse_x, last_mouse_y;
   int mouse_button_state;
   SDL_Surface * surf;
@@ -164,6 +163,7 @@ typedef struct Window
   bool (*on_draw)(struct Window *, SDL_Surface * scr, SDL_Rect scrrect); // Return true to skip drawing
   void (*on_close)(struct Window *);
   bool (*on_resize)(struct Window *, SDL_Surface * old_surface); // Return false if you didn't draw on new surf
+  bool (*on_resized)(struct Window *); // Fired once after resize (not during, like above)
   void (*on_raise)(struct Window *);
   void (*on_lower)(struct Window *);
   void (*on_mousedown)(struct Window *, int x, int y, int button, int type, bool raised);
@@ -173,8 +173,8 @@ typedef struct Window
   void (*on_mouseout)(struct Window *, bool over);
   void (*on_keydown)(struct Window *, SDL_keysym *, bool down);
   void (*on_keyup)(struct Window *, SDL_keysym *, bool down);
-  void * opaque_ptr;
-  int opaque_int;
+  void * opaque_ptr;    // This is like a single window prop
+  int opaque_int;       // This is like a single window prop
   WindowProp * props;
   int props_count;
   uint8_t button_state; // Bits for titlebar buttons pressed
@@ -185,7 +185,7 @@ typedef struct Window
 Window * window_dirty (Window * w);
 void window_get_rect (Window * w, SDL_Rect * r);
 void window_close (Window * w);
-Window * window_create (int w, int h, const char * caption, int flags, void* (*pix_alloc)(size_t));
+Window * window_create (int w, int h, const char * caption, int flags);
 bool window_is_top (Window * w);
 Window * window_below (Window * w);
 Window * window_above (Window * w);
