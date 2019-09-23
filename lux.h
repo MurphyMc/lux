@@ -119,6 +119,7 @@ bool rect_overlaps (SDL_Rect * r1, SDL_Rect * r2);
 // Does r2 completely obscure r1?
 bool rect_covered_by (SDL_Rect * r1, SDL_Rect * r2);
 
+void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color);
 
 // -- Window ----------------------------------------------------------------
 

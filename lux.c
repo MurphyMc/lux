@@ -1272,21 +1272,18 @@ static void draw_corner_up (SDL_Surface * surf, int x, int y, int size, Uint32 c
 }
 
 // Unlike SDL_FillRect, this never messes with the value in r.
-static void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color)
+void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color)
 {
-  SDL_Rect rr;
   if (r)
   {
+    SDL_Rect rr;
     rr = *r;
+    SDL_FillRect(surf, &rr, color);
   }
   else
   {
-    rr.x = 0;
-    rr.y = 0;
-    rr.w = surf->w;
-    rr.h = surf->h;
+    SDL_FillRect(surf, NULL, color);
   }
-  SDL_FillRect(surf, &rr, color);
 }
 
 static void rect_outline (SDL_Surface * surf, SDL_Rect * rrr, int size, Uint32 color)
