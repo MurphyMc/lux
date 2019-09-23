@@ -306,6 +306,10 @@ static bool rect_clip_inside (SDL_Rect * r, SDL_Rect * clip)
 #define RESIZE_L 8
 #define RESIZE_NONE 0
 
+// These are for the buttons on the titlebar
+#define WINDOW_BUTTON_NONE 0x7f
+#define WINDOW_BUTTON_BIT(B) ((B) >= 0 ? (B) : (1) << (8+(B)))
+
 bool _window_dirty = true;
 
 //static const int _window_default_top = 20;
@@ -316,6 +320,14 @@ static int _next_w_y = _window_default_top;
 
 static Window * _top_window = NULL;
 static Window * _mouse_window = NULL;
+
+// Variables used by event loop
+static bool quitting = false;
+static Point drag_offset;
+static SDL_Rect resize_start;
+static bool drag = false;
+static int resize = RESIZE_NONE;
+static int button_captured = WINDOW_BUTTON_NONE;
 
 static Window * _switcher_below = NULL;
 // When the window switcher is active, this is the window beneath where the
@@ -708,8 +720,6 @@ void window_get_client_rect (Window * w, SDL_Rect * r)
 }
 
 // In window coords
-#define WINDOW_BUTTON_NONE 0x7f
-#define WINDOW_BUTTON_BIT(B) ((B) >= 0 ? (B) : (1) << (8+(B)))
 void _window_get_button_rect (Window * w, SDL_Rect * r, int button)
 {
   r->h = 2*EMBOSS_SIZE + TITLEBAR_H;
@@ -1672,14 +1682,6 @@ static void _unswitch ()
   _switcher_below->above = prv;
 }
 
-
-// Variables used by event loop
-static bool quitting = false;
-static Point drag_offset;
-static SDL_Rect resize_start;
-static bool drag = false;
-static int resize = RESIZE_NONE;
-static int button_captured = WINDOW_BUTTON_NONE;
 
 void lux_terminate ()
 {
