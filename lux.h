@@ -154,7 +154,6 @@ typedef struct Window
   int last_mouse_x, last_mouse_y;
   int mouse_button_state;
   SDL_Surface * surf;
-  bool fixed;
   char * title;
   struct Window * above;
   struct Window * below;

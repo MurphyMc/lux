@@ -484,7 +484,6 @@ Window * window_create (int w, int h, const char * caption, int flags, void* (*p
   Window * wnd = (Window *)calloc(sizeof(Window), 1);
   window_dirty(wnd);
   wnd->dirty_chrome = true;
-  wnd->fixed = true;
   wnd->flags = flags;
   wnd->on_close = window_close;
   if (!pix_alloc) pix_alloc = malloc;
