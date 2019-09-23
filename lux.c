@@ -486,6 +486,8 @@ Window * window_create (int w, int h, const char * caption, int flags, void* (*p
   wnd->dirty_chrome = true;
   wnd->flags = flags;
   wnd->on_close = window_close;
+  wnd->bg_color = _face_color;
+
   if (!pix_alloc) pix_alloc = malloc;
   wnd->pix_alloc = pix_alloc;
   void * pixels = pix_alloc(4 * w * h);
