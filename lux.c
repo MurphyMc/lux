@@ -721,12 +721,15 @@ void _window_get_button_rect (Window * w, SDL_Rect * r, int button)
 
 Window * window_clear_client (Window * w, uint32_t color)
 {
-  SDL_Color z;
-  sdlcolor(color, &z);
-  Uint32 c = SDL_MapRGB(w->surf->format, z.r, z.g, z.b);
-  SDL_Rect r;
-  window_get_client_rect(w, &r);
-  SDL_FillRect(w->surf, &r, c);
+  if (w->surf)
+  {
+    SDL_Color z;
+    sdlcolor(color, &z);
+    Uint32 c = SDL_MapRGB(w->surf->format, z.r, z.g, z.b);
+    SDL_Rect r;
+    window_get_client_rect(w, &r);
+    SDL_FillRect(w->surf, &r, c);
+  }
   window_dirty(w);
   return w;
 }
