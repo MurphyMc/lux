@@ -439,6 +439,8 @@ void window_close (Window * w)
   }
   free(w->props);
   free(w);
+
+  free(w->title);
 }
 
 static WindowProp * _window_find_create_prop (Window * w, int id, bool create)
