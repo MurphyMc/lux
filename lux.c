@@ -1165,7 +1165,7 @@ bool _window_draw_all (bool force)
   w = _top_window->above; // Bottom window
   while (w)
   {
-    SDL_Rect r;
+    SDL_Rect r,cr;
     window_get_rect(w, &r);
     if (w->will_draw)
     {
@@ -1175,7 +1175,12 @@ bool _window_draw_all (bool force)
         w->dirty_chrome = false;
       }
       w->will_draw = false;
-      if (w->on_draw && w->on_draw(w, screen, r))
+      if (w->on_draw)
+      {
+        window_get_client_rect(w, &cr);
+        window_rect_window_to_screen(w, &cr);
+      }
+      if (w->on_draw && w->on_draw(w, screen, cr))
       {
         // Pass
       }
