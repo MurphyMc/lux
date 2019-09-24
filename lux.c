@@ -1906,8 +1906,11 @@ bool lux_do_event (SDL_Event * event)
           {
             if (_mouse_window->on_mouseout) _mouse_window->on_mouseout(_mouse_window, false);
           }
-          if (w->on_mouseover) w->on_mouseover(w, true);
-          _mouse_window = w;
+          if (_mouse_window != w)
+          {
+            if (w->on_mousein) w->on_mousein(w, true);
+            _mouse_window = w;
+          }
 
           window_pt_screen_to_client(w, &pt);
           SDL_Rect r;
@@ -2010,8 +2013,11 @@ bool lux_do_event (SDL_Event * event)
       {
         if (_mouse_window->on_mouseout) _mouse_window->on_mouseout(_mouse_window, false);
       }
-      if (w->on_mouseover) w->on_mouseover(w, true);
-      _mouse_window = w;
+      if (_mouse_window != w)
+      {
+        if (w->on_mousein) w->on_mousein(w, true);
+        _mouse_window = w;
+      }
 
       SDL_Rect r;
       window_get_client_rect(w, &r);

@@ -170,7 +170,7 @@ typedef struct Window
   void (*on_mousedown)(struct Window *, int x, int y, int button, int type, bool raised);
   void (*on_mouseup)(struct Window *, int x, int y, int button, int type, bool raised);
   void (*on_mousemove)(struct Window *, int x, int y, int buttons, int dx, int dy);
-  void (*on_mouseover)(struct Window *, bool over);
+  void (*on_mousein)(struct Window *, bool over);
   void (*on_mouseout)(struct Window *, bool over);
   void (*on_keydown)(struct Window *, SDL_keysym *, bool down);
   void (*on_keyup)(struct Window *, SDL_keysym *, bool down);
