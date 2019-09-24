@@ -700,11 +700,7 @@ void _window_add_uncover_rect (SDL_Rect * r)
   if (_window_uncover_rect_count >= _window_uncover_rect_max)
   {
     // Merge new rect into rect 0 (could do better)
-    SDL_Rect * cr = _window_uncover_rects;
-    if (r->x < cr->x) cr->x = r->x;
-    if (r->y < cr->y) cr->y = r->y;
-    if (r->x+r->w > cr->x+cr->w) cr->w = r->x+r->w-cr->x;
-    if (r->y+r->h > cr->y+cr->h) cr->h = r->y+r->h-cr->y;
+    rect_cover(_window_uncover_rects, _window_uncover_rects, r);
   }
   else
   {
