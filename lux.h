@@ -170,8 +170,8 @@ typedef struct Window
   void (*on_destroy)(struct Window *); // Always happens; after close
   bool (*on_resize)(struct Window *, SDL_Surface * old_surface); // Return false if you didn't draw on new surf
   bool (*on_resized)(struct Window *); // Fired once after resize (not during, like above)
-  void (*on_raise)(struct Window *);
-  void (*on_lower)(struct Window *);
+  void (*on_raise)(struct Window *, bool raised);
+  void (*on_lower)(struct Window *, bool raised);
   void (*on_mousedown)(struct Window *, int x, int y, int button, int type, bool raised);
   void (*on_mouseup)(struct Window *, int x, int y, int button, int type, bool raised);
   void (*on_mousemove)(struct Window *, int x, int y, int buttons, int dx, int dy);

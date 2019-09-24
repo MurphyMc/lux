@@ -656,7 +656,7 @@ Window * window_raise (Window * w)
     }
   }
 
-  if (_top_window->on_lower) _top_window->on_lower(_top_window);
+  if (_top_window->on_lower) _top_window->on_lower(_top_window, false);
 
   w->below->above = w->above;
   w->above->below = w->below;
@@ -668,7 +668,7 @@ Window * window_raise (Window * w)
   _top_window->above = w;
 
   _top_window = w;
-  if (_top_window->on_raise) _top_window->on_raise(_top_window);
+  if (_top_window->on_raise) _top_window->on_raise(_top_window, true);
 
   window_dirty(w);
   window_dirty_chrome(w);
