@@ -305,6 +305,12 @@ void rect_cover (SDL_Rect * dst, SDL_Rect * src1, SDL_Rect * src2)
   *dst = r1;
 }
 
+unsigned int rect_area (SDL_Rect * r)
+{
+  if (rect_empty(r)) return 0;
+  return r->w * r->h;
+}
+
 #ifndef MIN
 #define MIN(V1,V2) (((V1) < (V2)) ? (V1) : (V2))
 #endif

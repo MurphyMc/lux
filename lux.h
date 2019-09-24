@@ -123,6 +123,9 @@ void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color);
 
 // Create a rect which covers two rects
 void rect_cover (SDL_Rect * dst, SDL_Rect * r1, SDL_Rect * r2);
+
+unsigned int rect_area (SDL_Rect * r);
+
 // -- Window ----------------------------------------------------------------
 
 #define WIN_F_RESIZE   1 // Window is resizable
