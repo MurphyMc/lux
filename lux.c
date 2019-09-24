@@ -742,11 +742,13 @@ static bool _window_do_uncovers ()
   //int b = rand() & 0xff;
 
   if (_window_uncover_rect_count == 0) return false;
+  SDL_Rect clip = {0,0,screen->w,screen->h};
   for (int i = 0; i < _window_uncover_rect_count; i++)
   {
     //Uint32 col = r << 16 | g << 8 | b << 0;
     //r -= 10; g -= 10; b -= 10;
     SDL_Rect * cr = _window_uncover_rects+i;
+    rect_clip_inside(cr, &clip);
     //printf("UNCOVERING...%i %i %i %i\n", cr->x,cr->y,cr->w,cr->h);
     SDL_FillRect(screen, cr, _bg_color_sdl);
     _window_mark_dirty_intersecting(cr);
