@@ -956,6 +956,28 @@ bool _window_resize (Window * w, int resize, int x, int y)
   return true;
 }
 
+void window_resize (Window * wnd, int w, int h)
+{
+  if (w == NORESIZE) w = wnd->w;
+  if (h == NORESIZE) h = wnd->h;
+
+  if (_window_resize(wnd, RESIZE_R|RESIZE_B, w, h))
+  {
+    // Check if it's way off screen.  What are correct margins here?
+    const int min_margin = 32;
+    int xx = wnd->x;
+    int yy = wnd->y;
+
+    if (wnd->x + wnd->w < min_margin) xx = min_margin - wnd->w;
+    if (wnd->y + wnd->h < min_margin) yy = min_margin - wnd->h;
+
+    if (xx != wnd->x || yy != wnd->y)
+    {
+      window_move(wnd, xx, yy);
+    }
+  }
+}
+
 Window * window_move (Window * w, int x, int y)
 {
   bool dirty = false;

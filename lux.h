@@ -187,6 +187,7 @@ typedef struct Window
 } Window;
 
 #define NOMOVE 0x7fFFff
+#define NORESIZE NOMOVE
 
 Window * window_dirty (Window * w);
 void window_get_rect (Window * w, SDL_Rect * r);
@@ -203,6 +204,7 @@ void window_get_client_rect (Window * w, SDL_Rect * r);
 Window * window_clear_client (Window * w, uint32_t color);
 Window * window_under (int x, int y);
 Window * window_move (Window * w, int x, int y); // x/y can be NOMOVE
+void window_resize (Window * w, int x, int y); // x/y can be NORESIZE
 
 void window_pt_screen_to_window (Window * w, Point * pt);
 void window_pt_window_to_screen (Window * w, Point * pt);
