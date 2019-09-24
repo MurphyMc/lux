@@ -162,6 +162,7 @@ typedef struct Window
   bool will_draw;
   bool (*on_draw)(struct Window *, SDL_Surface * scr, SDL_Rect scrrect); // Return true to skip drawing
   void (*on_close)(struct Window *);
+  void (*on_destroy)(struct Window *); // Always happens; after close
   bool (*on_resize)(struct Window *, SDL_Surface * old_surface); // Return false if you didn't draw on new surf
   bool (*on_resized)(struct Window *); // Fired once after resize (not during, like above)
   void (*on_raise)(struct Window *);

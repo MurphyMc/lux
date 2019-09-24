@@ -377,6 +377,8 @@ void window_close (Window * w)
   if (w == captured) captured = NULL; // Do we need to do more here?
   _reset_state();
 
+  if (w->on_destroy) w->on_destroy(w);
+
   _top_window = w->below;
   if (_top_window == w)
   {
