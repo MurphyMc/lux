@@ -785,6 +785,16 @@ Window * window_clear_client (Window * w, uint32_t color)
     Uint32 c = SDL_MapRGB(w->surf->format, z.r, z.g, z.b);
     SDL_FillRect(w->surf, NULL, c);
   }
+  else
+  {
+    SDL_Color z;
+    sdlcolor(color, &z);
+    Uint32 c = SDL_MapRGB(screen->format, z.r, z.g, z.b);
+    SDL_Rect r;
+    window_get_client_rect(w, &r);
+    window_rect_window_to_screen(w, &r);
+    SDL_FillRect(screen, &r, c);
+  }
   window_dirty(w);
   return w;
 }
