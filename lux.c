@@ -698,8 +698,7 @@ void window_get_rect (Window * w, SDL_Rect * r)
 
 
 static int _window_uncover_rect_count = 0;
-//static const int _window_uncover_rect_max = 4;
-#define _window_uncover_rect_max 4
+#define _window_uncover_rect_max 6
 static SDL_Rect _window_uncover_rects[_window_uncover_rect_max];
 
 void _window_add_uncover_rect (SDL_Rect * r)
