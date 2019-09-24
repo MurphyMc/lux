@@ -273,6 +273,37 @@ bool rect_covered_by (SDL_Rect * r1, SDL_Rect * r2)
   return true;
 }
 
+void rect_cover (SDL_Rect * dst, SDL_Rect * src1, SDL_Rect * src2)
+{
+  if (rect_empty(src1))
+  {
+    *dst = *src2;
+    return;
+  }
+  if (rect_empty(src2))
+  {
+    *dst = *src1;
+    return;
+  }
+
+  SDL_Rect r1 = *src1;
+  SDL_Rect r2 = *src2;
+
+  r1.w += r1.x;
+  r1.h += r1.y;
+  r2.w += r2.x;
+  r2.h += r2.y;
+
+  if (r1.x > r2.x) r1.x = r2.x;
+  if (r1.y > r2.y) r1.y = r2.y;
+  if (r1.w < r2.w) r1.w = r2.w;
+  if (r1.h < r2.h) r1.h = r2.h;
+
+  r1.w -= r1.x;
+  r1.h -= r1.y;
+
+  *dst = r1;
+}
 
 #ifndef MIN
 #define MIN(V1,V2) (((V1) < (V2)) ? (V1) : (V2))
