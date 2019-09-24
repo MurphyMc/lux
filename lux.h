@@ -197,6 +197,7 @@ Window * window_below (Window * w);
 Window * window_above (Window * w);
 Window * window_raise (Window * w);
 void window_get_rect (Window * w, SDL_Rect * r);
+Window * window_set_title (Window * w, const char * title);
 // Returns client rect in window coords
 void window_get_client_rect (Window * w, SDL_Rect * r);
 Window * window_clear_client (Window * w, uint32_t color);
