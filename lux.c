@@ -480,6 +480,7 @@ bool window_prop_set (Window * w, int id, intptr_t value)
   if (!p) return false;
   p->value = value;
   if (p->free) fprintf(stderr, "Setting non-pointer for pointer property\n");
+  return true;
 }
 
 intptr_t window_prop_get (Window * w, int id)
@@ -516,6 +517,7 @@ bool window_ptr_set (Window * w, int id, void * ptr)
   {
     p->free = _default_prop_free;
   }
+  return true;
 }
 
 void * window_ptr_get (Window * w, int id)
