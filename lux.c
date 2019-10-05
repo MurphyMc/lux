@@ -1002,7 +1002,14 @@ void window_resize (Window * wnd, int w, int h)
   if (w == NORESIZE) w = wnd->w;
   if (h == NORESIZE) h = wnd->h;
 
-  if (_window_resize(wnd, RESIZE_R|RESIZE_B, w, h))
+  SDL_Rect wr;
+  SDL_Rect cr;
+  window_get_rect(wnd, &wr);
+  window_get_client_rect(wnd, &cr);
+  int x = wnd->w - w - (wr.w - cr.w);
+  int y = wnd->h - h - (wr.h - cr.h);
+
+  if (_window_resize(wnd, RESIZE_R|RESIZE_B, x, y))
   {
     // Check if it's way off screen.  What are correct margins here?
     const int min_margin = 32;
