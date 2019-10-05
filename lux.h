@@ -184,6 +184,8 @@ typedef struct Window
   WindowProp * props;
   int props_count;
   uint8_t button_state; // Bits for titlebar buttons pressed
+  SDL_Cursor * cursor;
+  bool cursor_hidden;
 } Window;
 
 #define NOMOVE 0x7fFFff
@@ -199,6 +201,8 @@ Window * window_above (Window * w);
 Window * window_raise (Window * w);
 void window_get_rect (Window * w, SDL_Rect * r);
 Window * window_set_title (Window * w, const char * title);
+void window_cursor_show (Window * w, bool shown);
+void window_cursor_set (Window * w, SDL_Cursor * c);
 // Returns client rect in window coords
 void window_get_client_rect (Window * w, SDL_Rect * r);
 Window * window_clear_client (Window * w, uint32_t color);

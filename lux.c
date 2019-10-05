@@ -375,6 +375,8 @@ static Window * _switcher_below = NULL;
 
 static Window * captured = NULL;
 
+static SDL_Cursor * _cursor_arrow = NULL;
+
 
 Window * window_dirty (Window * w)
 {
@@ -391,6 +393,8 @@ Window * window_dirty_chrome (Window * w)
 }
 
 void _window_add_uncover_rect (SDL_Rect * r);
+static void _window_set_cursor (Window * w);
+
 
 void _resize_stop ()
 {
@@ -441,6 +445,9 @@ void window_close (Window * w)
   free(w);
 
   free(w->title);
+
+  // This will show the arrow until the mouse moves.
+  _window_set_cursor(NULL);
 }
 
 static WindowProp * _window_find_create_prop (Window * w, int id, bool create)
@@ -685,6 +692,40 @@ Window * window_set_title (Window * w, const char * title)
   w->title = strdup(title);
   window_dirty_chrome(w);
   return w;
+}
+
+void _window_set_cursor (Window * w)
+{
+  if (w == NULL)
+  {
+    SDL_SetCursor(_cursor_arrow);
+    SDL_ShowCursor(SDL_ENABLE);
+    return;
+  }
+  if (w->cursor_hidden)
+  {
+    SDL_ShowCursor(SDL_DISABLE);
+  }
+  else
+  {
+    if (w->cursor) SDL_SetCursor(w->cursor);
+    else           SDL_SetCursor(_cursor_arrow);
+    SDL_ShowCursor(SDL_ENABLE);
+  }
+}
+
+void window_cursor_show (Window * w, bool shown)
+{
+  w->cursor_hidden = !shown;
+  int x, y;
+  SDL_GetMouseState(&x, &y);
+  if (w == window_under(x, y)) _window_set_cursor(w);
+}
+
+void window_cursor_set (Window * w, SDL_Cursor * c)
+{
+  w->cursor = c;
+  window_cursor_show(w, !w->cursor_hidden);
 }
 
 void window_get_rect (Window * w, SDL_Rect * r)
@@ -1748,7 +1789,8 @@ bool lux_init (int w, int h, const char * window_name)
   theme.win.title = mapcolor(screen, _title_color);
   theme.win.title_shd = mapcolor(screen, _title_shd_color);
 
-  SDL_SetCursor(create_cursor_xpm(arrow));
+  _cursor_arrow = create_cursor_xpm(arrow);
+  SDL_SetCursor(_cursor_arrow);
 
   if (!window_name) window_name = "Lux";
   SDL_WM_SetCaption(window_name, NULL);
@@ -1975,16 +2017,6 @@ bool lux_do_event (SDL_Event * event)
         w = window_under(x, y);
         if (w)
         {
-          if (_mouse_window && w != _mouse_window)
-          {
-            if (_mouse_window->on_mouseout) _mouse_window->on_mouseout(_mouse_window, false);
-          }
-          if (_mouse_window != w)
-          {
-            if (w->on_mousein) w->on_mousein(w, true);
-            _mouse_window = w;
-          }
-
           window_pt_screen_to_client(w, &pt);
           SDL_Rect r;
           window_get_client_rect(w, &r);
@@ -1992,6 +2024,14 @@ bool lux_do_event (SDL_Event * event)
           {
             w = NULL;
           }
+        }
+
+        if (_mouse_window != w)
+        {
+          if (_mouse_window && _mouse_window->on_mouseout) _mouse_window->on_mouseout(_mouse_window, false);
+          if (w && w->on_mousein) w->on_mousein(w, true);
+          _mouse_window = w;
+          _window_set_cursor(w);
         }
       }
 
@@ -2084,10 +2124,12 @@ bool lux_do_event (SDL_Event * event)
 
       if (_mouse_window && w != _mouse_window)
       {
+        _window_set_cursor(NULL);
         if (_mouse_window->on_mouseout) _mouse_window->on_mouseout(_mouse_window, false);
       }
       if (_mouse_window != w)
       {
+        _window_set_cursor(w);
         if (w->on_mousein) w->on_mousein(w, true);
         _mouse_window = w;
       }
