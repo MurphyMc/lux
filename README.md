@@ -19,7 +19,7 @@ the system (which is potentially useful in itself).
 It's my belief that the included font comes from X and is in the public
 domain. Thanks go to Lars C. Hassing for making it available in an
 easy-to-consume form.  More information on the font file can be found with
-the [Antsy terminal emulator](https://github.com/MurphyMc/antsy).
+the [Lilt terminal emulator](https://github.com/MurphyMc/lilt).
 
 ## The Demo
 
