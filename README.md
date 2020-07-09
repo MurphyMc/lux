@@ -10,8 +10,8 @@ windows, handle keyboard and mouse input, manage the cursor, etc.):
 
 ![SDLuxer screenshot](screenshot.png)
 
-Lux is currently is tied to SDL for getting events and displaying output,
-and it uses some SDL structures as part of its interface.  It should be
+Lux is currently tied to SDL for getting events and displaying output, and
+it uses some SDL structures as part of its interface.  It should be
 possible to port it to non-SDL systems (i.e., framebuffers plus some input),
 but the easiest way to do that is probably to port at least parts of SDL to
 the system (which is potentially useful in itself).
