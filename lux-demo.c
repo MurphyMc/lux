@@ -88,8 +88,6 @@ int main (int argc, char * argv[])
   lux_set_bg_color(def_bg_color);
 
 
-  SDL_Init(SDL_INIT_VIDEO);
-
   lux_init(screen_width, screen_height, NULL);
 
   key_register_fkey(SDLK_F1, KMOD_NONE, my_f1_handler);
