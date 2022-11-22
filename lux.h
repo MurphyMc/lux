@@ -228,4 +228,7 @@ void lux_terminate ();
 int lux_sysfont_w ();
 int lux_sysfont_h ();
 Theme lux_get_theme ();
+
 void text_draw (SDL_Surface * surf, const char * s, int x, int y, uint32_t color);
+
+SDL_Surface * surface_create (int w, int h, int depth, void * buf, int pitch, int flags);

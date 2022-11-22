@@ -1893,6 +1893,33 @@ bool lux_init (int w, int h, const char * window_name)
   return true;
 }
 
+SDL_Surface * surface_create (int w, int h, int depth, void * buf, int pitch, int flags)
+{
+  if (depth == 0) depth = 32;
+  if (pitch == 0) pitch = w * (depth / 8);
+  if (depth != 32) return NULL; // Not supported (yet)
+
+  Uint32 rr = rmask;
+  Uint32 gg = gmask;
+  Uint32 bb = bmask;
+  Uint32 aa = amask;
+  if (flags & 1)
+  {
+    Uint32 t = rr;
+    rr = bb;
+    bb = t;
+  }
+
+  SDL_Surface * s = NULL;
+  if (buf)
+    s = SDL_CreateRGBSurfaceFrom(buf, w, h, depth, pitch, rr, gg, bb, aa);
+  else
+    s = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, depth, rr, gg, bb, aa);
+
+  //printf("%i %i d:%i p:%i\n", w, h, depth, pitch);
+  return s;
+}
+
 static void _lux_terminate ()
 {
   Window * w = _top_window;
