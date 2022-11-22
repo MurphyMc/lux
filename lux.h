@@ -52,20 +52,8 @@ extern Uint32 gmask;
 extern Uint32 bmask;
 extern Uint32 amask;
 
-static void sdlcolor (uint32_t c, SDL_Color * r)
-{
-  r->b = (c >>  0) & 0xff;
-  r->g = (c >>  8) & 0xff;
-  r->r = (c >> 16) & 0xff;
-}
-
-static Uint32 mapcolor (SDL_Surface * surf, uint32_t normal)
-{
-  SDL_Color c;
-  sdlcolor(normal, &c);
-  return SDL_MapRGB(surf->format, c.r, c.g, c.b);
-}
-
+void sdlcolor (uint32_t c, SDL_Color * r);
+Uint32 mapcolor (SDL_Surface * surf, uint32_t normal);
 
 // -- Geometry ---------------------------------------------------------------
 
@@ -75,56 +63,37 @@ typedef struct Point
   int y;
 } Point;
 
-static void rect_adj (SDL_Rect * r, int x, int y, int w, int h)
-{
-  r->x += x;
-  r->y += y;
-  r->w += w;
-  r->h += h;
-}
-
-static void rect_shrink (SDL_Rect * r, int s)
-{
-  rect_adj(r, s, s, -2*s, -2*s);
-}
-
-static bool rect_empty (SDL_Rect * r)
-{
-  return (r->w <= 0) || (r->h <= 0);
-}
-
-static bool rect_contains_point (SDL_Rect * r, Point * p)
-{
-  return (p->x >= r->x) && (p->x < (r->x + r->w))
-      && (p->y >= r->y) && (p->y < (r->y + r->h));
-}
-
 #define point_in_rect(P,R) rect_contains_point(R,P)
 
-
-static bool rect_equal (SDL_Rect * r1, SDL_Rect * r2)
-{
-  if (r1->x != r2->x) goto fail;
-  if (r1->y != r2->y) goto fail;
-  if (r1->w != r2->w) goto fail;
-  if (r1->h != r2->h) goto fail;
-  return true;
-fail:
-  if (rect_empty(r1) && rect_empty(r2)) return true;
-  return false;
-}
-
-bool rect_overlaps (SDL_Rect * r1, SDL_Rect * r2);
-
-// Does r2 completely obscure r1?
-bool rect_covered_by (SDL_Rect * r1, SDL_Rect * r2);
-
+// Draw a filled rectangle
 void rect_fill (SDL_Surface * surf, SDL_Rect * r, Uint32 color);
 
 // Create a rect which covers two rects
 void rect_cover (SDL_Rect * dst, SDL_Rect * r1, SDL_Rect * r2);
 
+// Area of rectangle
 unsigned int rect_area (SDL_Rect * r);
+
+// Adjust a rectangle
+void rect_adj (SDL_Rect * r, int x, int y, int w, int h);
+
+// Shrink all sizes by s pixels
+void rect_shrink (SDL_Rect * r, int s);
+
+// Check if rectangle is empty / zero size
+bool rect_empty (SDL_Rect * r);
+
+// Check if a rectangle contains a given point
+bool rect_contains_point (SDL_Rect * r, Point * p);
+
+// Check if two rectangles overlap
+bool rect_overlaps (SDL_Rect * r1, SDL_Rect * r2);
+
+// Check if r2 completely obscures r1
+bool rect_covered_by (SDL_Rect * r1, SDL_Rect * r2);
+
+// Check if two rectangles are the same (any empty rectangles are equal!)
+bool rect_equal (SDL_Rect * r1, SDL_Rect * r2);
 
 // -- Window ----------------------------------------------------------------
 

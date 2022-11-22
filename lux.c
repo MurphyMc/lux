@@ -34,6 +34,20 @@ static SDL_Surface * scratch;
   Uint32 amask = 0xff000000;
 #endif
 
+void sdlcolor (uint32_t c, SDL_Color * r)
+{
+  r->b = (c >>  0) & 0xff;
+  r->g = (c >>  8) & 0xff;
+  r->r = (c >> 16) & 0xff;
+}
+
+Uint32 mapcolor (SDL_Surface * surf, uint32_t normal)
+{
+  SDL_Color c;
+  sdlcolor(normal, &c);
+  return SDL_MapRGB(surf->format, c.r, c.g, c.b);
+}
+
 
 // -- Cursor -----------------------------------------------------------------
 
@@ -332,6 +346,42 @@ static bool rect_clip_inside (SDL_Rect * r, SDL_Rect * clip)
   if (r->h < 0) r->h = 0;
 
   return rect_equal(&old, r);
+}
+
+void rect_adj (SDL_Rect * r, int x, int y, int w, int h)
+{
+  r->x += x;
+  r->y += y;
+  r->w += w;
+  r->h += h;
+}
+
+void rect_shrink (SDL_Rect * r, int s)
+{
+  rect_adj(r, s, s, -2*s, -2*s);
+}
+
+bool rect_empty (SDL_Rect * r)
+{
+  return (r->w <= 0) || (r->h <= 0);
+}
+
+bool rect_contains_point (SDL_Rect * r, Point * p)
+{
+  return (p->x >= r->x) && (p->x < (r->x + r->w))
+      && (p->y >= r->y) && (p->y < (r->y + r->h));
+}
+
+bool rect_equal (SDL_Rect * r1, SDL_Rect * r2)
+{
+  if (r1->x != r2->x) goto fail;
+  if (r1->y != r2->y) goto fail;
+  if (r1->w != r2->w) goto fail;
+  if (r1->h != r2->h) goto fail;
+  return true;
+fail:
+  if (rect_empty(r1) && rect_empty(r2)) return true;
+  return false;
 }
 
 
