@@ -429,6 +429,12 @@ static Window * captured = NULL;
 static SDL_Cursor * _cursor_arrow = NULL;
 
 
+void * window_get_pixels (Window * w)
+{
+  if (w->surf && w->surf->pixels) return w->surf->pixels;
+  return NULL;
+}
+
 Window * window_dirty (Window * w)
 {
   w->dirty = true;
