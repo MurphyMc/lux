@@ -6,6 +6,8 @@
 
 #include "font.h"
 
+// When we compare modifier keys, we don't want to include caps/num lock.
+#define NORMAL_MODS (KMOD_CTRL|KMOD_SHIFT|KMOD_ALT|KMOD_META)
 
 #ifndef LUX_SWITCHER_KEY
 #define LUX_SWITCHER_KEY   SDLK_BACKQUOTE
@@ -2083,7 +2085,7 @@ bool lux_do_event (SDL_Event * event)
 
     if (event->key.keysym.sym >= SDLK_F1 && event->key.keysym.sym <= SDLK_F15)
     {
-      process = process && !_key_maybe_invoke_fkey(event->key.keysym.sym, event->key.keysym.mod);
+      process = process && !_key_maybe_invoke_fkey(event->key.keysym.sym, event->key.keysym.mod & NORMAL_MODS);
     }
 
     if (process && _top_window && _top_window->on_keydown)
