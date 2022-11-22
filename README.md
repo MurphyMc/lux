@@ -55,3 +55,24 @@ A very short crash course:
 * The F-keys can be used as global hotkeys.
 * You can either let Lux run an event loop (`lux_loop`), or you can run
   your own SDL event loop, passing events to Lux (`lux_do_event`).
+
+## Lux and Python
+
+Lux now builds a shared library which can be used from Python.  If you
+have ctypesgen installed, you can build the library, automatically
+generate ctypes-based bindings, and end up with a Python package
+that can be installed with pip.  If your SDL or ctypesgen is not
+installed in a typical place, you may need to tweak some environment
+variables.  Check the script source code.  But if you're lucky, the
+following will do it all:
+```
+cmake .
+pip install --user ctypesgen
+./make_py_bindings.sh
+pip install --user .
+```
+
+You can then run a simple test script:
+```
+python3 lux-demo.py
+```
