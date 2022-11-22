@@ -220,6 +220,9 @@ bool lux_init (int w, int h, const char * window_name); // true on success
 void lux_loop ();
 bool lux_draw (); // true if drew
 bool lux_do_event (SDL_Event * event); // true if not quit
+int lux_poll_for_event (void);
+int lux_wait_for_event (void);
+bool lux_is_quitting (void);
 void lux_terminate ();
 int lux_sysfont_w ();
 int lux_sysfont_h ();

@@ -1939,16 +1939,42 @@ void lux_loop ()
   while (!quitting)
   {
     lux_draw();
-
-    SDL_Event event;
-    bool got_sdl_event = SDL_WaitEvent(&event);
-
-    if (got_sdl_event)
-    {
-      if (!lux_do_event(&event)) break;
-    }
+    lux_wait_for_event();
   }
   lux_terminate();
+}
+
+bool lux_is_quitting (void)
+{
+  return quitting;
+}
+
+int lux_poll_for_event (void)
+{
+  SDL_Event event;
+  bool got_sdl_event = SDL_PollEvent(&event);
+
+  if (got_sdl_event)
+  {
+    if (!lux_do_event(&event)) return 0;
+    return 1;
+  }
+
+  return -1;
+}
+
+int lux_wait_for_event (void)
+{
+  SDL_Event event;
+  bool got_sdl_event = SDL_WaitEvent(&event);
+
+  if (got_sdl_event)
+  {
+    if (!lux_do_event(&event)) return 0;
+    return 1;
+  }
+
+  return -1;
 }
 
 bool lux_do_event (SDL_Event * event)
