@@ -261,6 +261,7 @@ static uint32_t _de_title_shd_color = 0x3d3d3d;
 #define SCRATCH_W (OUTLINE+EDGE_SIZE+2*EMBOSS_SIZE+TITLEBAR_H)
 #define SCRATCH_H (OUTLINE+EDGE_SIZE+2*EMBOSS_SIZE+TITLEBAR_H)
 
+
 // -- Geometry ---------------------------------------------------------------
 
 bool rect_overlaps (SDL_Rect * r1, SDL_Rect * r2)
@@ -1374,7 +1375,8 @@ bool _window_draw_all (bool force)
   return any;
 }
 
-// -- Luxer ------------------------------------------------------------------
+
+// -- Misc -------------------------------------------------------------------
 
 int lux_sysfont_h ()
 {

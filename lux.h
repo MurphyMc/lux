@@ -211,7 +211,7 @@ bool window_ptr_set (Window * w, int id, void * value);
 void * window_ptr_get (Window * w, int id);
 int window_prop_id (const char * propname); // -1 on error
 
-// -- SDLuxer ----------------------------------------------------------------
+// -- Misc -------------------------------------------------------------------
 
 void lux_set_bg_color (uint32_t color);
 bool lux_init (int w, int h, const char * window_name); // true on success
