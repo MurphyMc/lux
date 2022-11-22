@@ -435,6 +435,20 @@ void * window_get_pixels (Window * w)
   return NULL;
 }
 
+SDL_Surface * window_swap_surface (Window * wnd, SDL_Surface * surf)
+{
+  // Returns old surface if it wasn't an autosurf.
+  SDL_Surface * old = wnd->surf;
+  wnd->surf = surf;
+  if (wnd->flags & WIN_F_AUTOSURF)
+  {
+    if (old) SDL_FreeSurface(old);
+    old = NULL;
+  }
+  wnd->flags &= ~WIN_F_AUTOSURF;
+  return old;
+}
+
 Window * window_dirty (Window * w)
 {
   w->dirty = true;

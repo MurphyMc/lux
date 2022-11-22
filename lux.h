@@ -212,6 +212,7 @@ bool window_ptr_set (Window * w, int id, void * value);
 void * window_ptr_get (Window * w, int id);
 int window_prop_id (const char * propname); // -1 on error
 void * window_get_pixels (Window * w);
+SDL_Surface * window_swap_surface (Window * wnd, SDL_Surface * surf);
 
 // -- Misc -------------------------------------------------------------------
 
