@@ -32,4 +32,10 @@ cmake --build .
 echo "Using ctypesgen: $CTYPESGEN"
 echo "Using SDL: $SDL"
 
-exec $CTYPESGEN -L. -l./liblux.so -I$SDL lux.h $SDL/SDL_keysym.h -o lux_gui/liblux.py
+set -e
+
+if [[ ! -e lux_gui/liblux.so ]]; then
+  ln -s "$(pwd)/liblux.so" lux_gui
+fi
+
+exec $CTYPESGEN -L. -l./liblux.so -I$SDL lux.h $SDL/SDL_keysym.h -o lux_gui/pyliblux.py

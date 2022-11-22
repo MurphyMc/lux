@@ -4,12 +4,12 @@ A simple demo of using liblux from Python
 .. *or*, a little library for using liblux from Python.
 """
 try:
-  from .liblux import *
+  from .pyliblux import *
 except Exception:
   import os
   import sys
   sys.path.append( os.path.dirname(os.path.abspath(__file__)) )
-  from liblux import *
+  from pyliblux import *
 
 from time import sleep
 import threading
