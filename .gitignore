@@ -8,3 +8,9 @@ a.out
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
+build/*
+lux_gui.egg-info/*
+*.pyc
+*.so
+*.a
+lux_gui/pyliblux.py
