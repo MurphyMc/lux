@@ -16,7 +16,7 @@ import threading
 from ctypes import *
 
 
-lock = threading.Lock()
+lock = threading.RLock()
 
 should_quit = False
 
