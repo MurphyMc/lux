@@ -725,14 +725,14 @@ Window * window_raise (Window * w)
     }
     _top_window->mouse_button_state = 0;
   }
-  if (_top_window->on_keyup && _pressed_keys_count)
+  if (_pressed_keys_count)
   {
     for (int i = 0; i < MAX_KEYS_DOWN; i++)
     {
       if (_pressed_keys[i].sym != SDL_KEY_INVALID)
       {
         // synthesize key up
-        if (_key_release(_pressed_keys+i))
+        if (_key_release(_pressed_keys+i) && _top_window->on_keyup)
         {
           _top_window->on_keyup(_top_window, &_pressed_keys[i], false);
         }
@@ -2107,9 +2107,9 @@ bool lux_do_event (SDL_Event * event)
     }
     else
     {
-      if (_top_window && _top_window->on_keyup)
+      if (_key_release(&event->key.keysym))
       {
-        if (_key_release(&event->key.keysym))
+        if (_top_window && _top_window->on_keyup)
         {
           _top_window->on_keyup(_top_window, &event->key.keysym, false);
         }
